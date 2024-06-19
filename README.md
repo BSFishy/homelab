@@ -55,3 +55,14 @@ sudo $(which docker) compose up -d
 ```bash
 sudo $(which docker) container prune
 ```
+
+## TODO
+
+Here is a list of things that I want to do with this setup:
+
+- [ ] Organize compose files into a more structured system. For example, put
+      all tools into a root level `tools` directory, put all starr applications
+      into a root level `starr` directory, etc.
+- [ ] Create or utilize a tool for templating to streamline the bootstrap
+      process. For example, automatically retrieve the current user ID for
+      proper file permissions.
