@@ -1,6 +1,38 @@
-/config/.storage
-/config/.HA_VERSION
-/config/*.db*
-/config/**/*.log
-/config/**/*.log.*
-/config/secrets.yaml
+# Ignore the cloud directory (usually contains sensitive data)
+config/.cloud/
+
+# Ignore dependency directory
+config/deps/
+
+# Ignore log files
+config/home-assistant.log*
+config/home-assistant.log.fault
+
+# Ignore database files
+config/home-assistant_v2.db*
+config/home-assistant_v2.db-shm
+config/home-assistant_v2.db-wal
+
+# Ignore storage files (usually contains sensitive data)
+config/.storage/
+
+# Ignore temporary and system files
+*.tmp
+*.swp
+*.swo
+.DS_Store
+
+# Don't ignore YAML configuration files
+!config/automations.yaml
+!config/blueprints/
+!config/blueprints/automation/homeassistant/*.yaml
+!config/blueprints/script/homeassistant/*.yaml
+!config/configuration.yaml
+!config/scenes.yaml
+!config/scripts.yaml
+
+# Ignore the .HA_VERSION file
+config/.HA_VERSION
+
+# Ignore Text-to-Speech files
+config/tts/
