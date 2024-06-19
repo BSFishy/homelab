@@ -24,6 +24,12 @@ docker compose pull
 docker compose up -d
 ```
 
+### Pruning existing containers
+
+```bash
+docker container prune
+```
+
 ## Usage as root
 
 ### Running as root
@@ -42,4 +48,10 @@ sudo $(which docker) compose pull
 
 ```bash
 sudo $(which docker) compose up -d
+```
+
+### Pruning existing containers as root
+
+```bash
+sudo $(which docker) container prune
 ```
