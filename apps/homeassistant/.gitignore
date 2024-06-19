@@ -1,3 +1,6 @@
+# Ignore generated compose file
+/compose.yml
+
 # Ignore the cloud directory (usually contains sensitive data)
 config/.cloud/
 

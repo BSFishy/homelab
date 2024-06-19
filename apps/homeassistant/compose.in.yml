@@ -4,8 +4,8 @@ services:
     container_name: homeassistant
     network_mode: host
     environment:
-      - PUID=1000
-      - PGID=1000
+      - PUID=${UID}
+      - PGID=${GID}
       - TZ=America/Chicago
     volumes:
       - ./config:/config

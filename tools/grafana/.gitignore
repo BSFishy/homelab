@@ -1,3 +1,6 @@
+# Ignore generated compose file
+/compose.yml
+
 # Ignore Grafana database file
 data/grafana.db
 
