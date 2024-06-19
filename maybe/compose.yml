@@ -1,0 +1,25 @@
+# TODO: needs database
+# TODO: can probably follow https://github.com/maybe-finance/maybe/blob/ca39b260704b97abb1297633b6b36bdfca5b9a10/docker-compose.example.yml
+services:
+  maybe:
+    image: ghcr.io/maybe-finance/maybe:latest
+    container_name: maybe
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SELF_HOSTING_ENABLED: "true"
+      RAILS_FORCE_SSL: "false"
+      RAILS_ASSUME_SSL: "false"
+      GOOD_JOB_EXECUTION_MODE: async
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:?}
+      DB_HOST: postgres
+      POSTGRES_DB: ${POSTGRES_DB:-maybe_production}
+      POSTGRES_USER: ${POSTGRES_USER:-maybe_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+    volumes:
+      - ./storage:/rails/storage
+    ports:
+      # TODO: probably need to change the port
+      - 3000:3000
+    restart: unless-stopped
