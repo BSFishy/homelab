@@ -1,0 +1,12 @@
+# TODO: fill out the configuration: https://github.com/AmruthPillai/Reactive-Resume/blob/767573ce6d520ee5e484859d390ced9646dd3e17/tools/compose/simple.yml
+services:
+  reactive-resume:
+    image: ghcr.io/amruthpillai/reactive-resume:latest
+    container_name: reactive-resume
+    environment:
+      - TZ=America/Chicago
+      - PORT: 3000
+      - NODE_ENV: production
+    ports:
+      - 3000:3000
+    restart: unless-stopped

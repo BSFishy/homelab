@@ -4,3 +4,5 @@ include:
   - dozzle/compose.yml
   - homeassistant/compose.yml
   - jellyfin/compose.yml
+  # TODO: enable reactive resume
+  # - reactive-resume/compose.yml
