@@ -2,6 +2,7 @@ name: homelab
 
 include:
   - dozzle/compose.yml
+  - grafana/compose.yml
   - homeassistant/compose.yml
   - jellyfin/compose.yml
   # TODO: enable reactive resume

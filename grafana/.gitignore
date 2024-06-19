@@ -1,0 +1,15 @@
+# Ignore Grafana database file
+data/grafana.db
+
+# Ignore CSV and PDF export directories
+data/csv/
+data/pdf/
+
+# Ignore PNG export directory
+data/png/
+
+# Ignore plugins directory (assuming plugins can be re-installed or are not custom plugins)
+data/plugins/
+
+# Ignore alerting templates
+data/alerting/
