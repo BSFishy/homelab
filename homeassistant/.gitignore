@@ -1,0 +1,6 @@
+/config/.storage
+/config/.HA_VERSION
+/config/*.db*
+/config/**/*.log
+/config/**/*.log.*
+/config/secrets.yaml
