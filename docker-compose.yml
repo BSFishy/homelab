@@ -2,3 +2,4 @@ name: server
 
 include:
   - homeassistant/compose.yml
+  - jellyfin/compose.yml
