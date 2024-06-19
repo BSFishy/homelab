@@ -16,12 +16,6 @@ config/home-assistant_v2.db-wal
 # Ignore storage files (usually contains sensitive data)
 config/.storage/
 
-# Ignore temporary and system files
-*.tmp
-*.swp
-*.swo
-.DS_Store
-
 # Don't ignore YAML configuration files
 !config/automations.yaml
 !config/blueprints/

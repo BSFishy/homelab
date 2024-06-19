@@ -1,1 +1,8 @@
+# Ignore direnv cache
 /.direnv
+
+# Ignore temporary and system files
+*.tmp
+*.swp
+*.swo
+.DS_Store
