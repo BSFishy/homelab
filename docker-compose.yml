@@ -1,11 +1,5 @@
 name: homelab
 
 include:
-  - dozzle/compose.yml
-  - grafana/compose.yml
-  - homeassistant/compose.yml
-  - jellyfin/compose.yml
-  # TODO: enable maybe
-  # - maybe/compose.yml
-  # TODO: enable reactive resume
-  # - reactive-resume/compose.yml
+  - apps/compose.yml
+  - tools/compose.yml

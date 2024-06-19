@@ -1,0 +1,7 @@
+include:
+  - homeassistant/compose.yml
+  - jellyfin/compose.yml
+  # TODO: enable maybe
+  # - maybe/compose.yml
+  # TODO: enable reactive resume
+  # - reactive-resume/compose.yml

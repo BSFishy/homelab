@@ -64,7 +64,7 @@ Here is a list of things that I want to do with this setup:
       about setting up the project, documentation about how the system works
       including things like bootstrapping tools if they exist, the services
       that are set up, etc.
-- [ ] Organize compose files into a more structured system. For example, put
+- [x] Organize compose files into a more structured system. For example, put
       all tools into a root level `tools` directory, put all starr applications
       into a root level `starr` directory, etc.
 - [ ] Create or utilize a tool for templating to streamline the bootstrap
