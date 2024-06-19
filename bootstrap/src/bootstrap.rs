@@ -42,17 +42,21 @@ fn contains_in_dot(path: &Path) -> bool {
 fn strip_in_extension(path: &Path) -> Option<PathBuf> {
     if let Some(file_stem) = path.file_stem() {
         if let Some(file_stem_str) = file_stem.to_str() {
-            let new_file_name = file_stem_str.replace(".in", "");
+            let new_file_name = file_stem_str.replace(".in.", ".");
             if let Some(parent) = path.parent() {
                 let mut new_path = PathBuf::from(parent);
+
                 new_path.push(new_file_name);
+
                 if let Some(extension) = path.extension() {
                     new_path.set_extension(extension);
                 }
+
                 return Some(new_path);
             }
         }
     }
+
     None
 }
 
