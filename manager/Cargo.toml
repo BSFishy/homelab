@@ -1,5 +1,5 @@
 [package]
-name = "homelab"
+name = "homelab-manager"
 version = "0.1.0"
 description = "Tool for bootstrapping and managing the homelab"
 edition = "2021"
