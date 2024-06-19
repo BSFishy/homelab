@@ -1,5 +1,6 @@
 services:
   grafana:
+    # TODO: see if we need to use the enterprise edition or if we can get away with the standard or oss edition
     image: grafana/grafana-enterprise
     container_name: grafana
     user: "1000"
