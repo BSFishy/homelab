@@ -1,4 +1,4 @@
-# server configuration
+# homelab
 
 Setup for running my homelab configuration. Currently, this is just a Docker
 Compose configuration, however I might expand this to include some sort of
