@@ -2,4 +2,5 @@ name: homelab
 
 include:
   - apps/compose.yml
+  - services/compose.yml
   - tools/compose.yml
