@@ -13,4 +13,5 @@ clap = { version = "4.5", default-features = true, features = [
   "wrap_help",
 ] }
 ignore = "0.4"
+regex = "1.10"
 users = { version = "0.11", default-features = false }
