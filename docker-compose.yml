@@ -1,5 +1,6 @@
 name: server
 
 include:
+  - dozzle/compose.yml
   - homeassistant/compose.yml
   - jellyfin/compose.yml
