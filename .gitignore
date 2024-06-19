@@ -1,6 +1,9 @@
 # Ignore direnv cache
 /.direnv
 
+# Ignore Rust output
+/target
+
 # Ignore temporary and system files
 *.tmp
 *.swp
