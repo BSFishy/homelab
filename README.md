@@ -60,6 +60,10 @@ sudo $(which docker) container prune
 
 Here is a list of things that I want to do with this setup:
 
+- [ ] Rewrite readme with better information. This should include information
+      about setting up the project, documentation about how the system works
+      including things like bootstrapping tools if they exist, the services
+      that are set up, etc.
 - [ ] Organize compose files into a more structured system. For example, put
       all tools into a root level `tools` directory, put all starr applications
       into a root level `starr` directory, etc.
