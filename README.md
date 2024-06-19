@@ -70,3 +70,4 @@ Here is a list of things that I want to do with this setup:
 - [ ] Create or utilize a tool for templating to streamline the bootstrap
       process. For example, automatically retrieve the current user ID for
       proper file permissions.
+- [ ] Extend bootstrap tool to automatically set up the Cloudflare tunnel if desired
