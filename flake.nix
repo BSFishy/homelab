@@ -20,6 +20,7 @@
               pkgs.docker
               pkgs.docker-compose
               pkgs.rust-bin.stable.latest.default
+              pkgs.rust-bin.stable.latest.rust-analyzer
             ];
           };
         };

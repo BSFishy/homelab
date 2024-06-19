@@ -1,9 +1,14 @@
-use users::{get_current_gid, get_current_uid};
+use clap::Parser;
+
+mod args;
+mod bootstrap;
 
 fn main() {
-    let gid = get_current_gid();
-    let uid = get_current_uid();
+    use args::Command;
 
-    println!("Current gid: {}", gid);
-    println!("Current uid: {}", uid);
+    let args = args::Args::parse();
+
+    match args.command {
+        Command::Bootstrap => bootstrap::bootstrap(),
+    }
 }
