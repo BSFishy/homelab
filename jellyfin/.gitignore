@@ -21,8 +21,9 @@ config/*.log
 # TODO: figure out which of these should and shouldn't be ignored
 # Don't ignore the necessary configuration files for the plugins and the system
 # But if they contain sensitive information, consider if they should be included in the repo
-# config/encoding.xml
+config/encoding.xml
 # config/logging.default.json
-# config/migrations.xml
-# config/system.xml
+config/migrations.xml
+config/network.xml
+config/system.xml
 
