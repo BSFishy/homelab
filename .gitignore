@@ -7,6 +7,9 @@
 # Ignore generated docker compose file
 /docker-compose.yml
 
+# Ignore generated port mapping file
+/port_mapping.txt
+
 # Ignore temporary and system files
 *.tmp
 *.swp

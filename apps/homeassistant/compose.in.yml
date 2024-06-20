@@ -10,7 +10,7 @@ services:
     volumes:
       - ./config:/config
     ports:
-      - 8123:8123 #optional
+      - ${PORT:homeassistant}:8123 #optional
     # devices:
     #   - /path/to/device:/path/to/device #optional
     restart: unless-stopped

@@ -1,3 +1,4 @@
+use crate::port_cache::PortCache;
 use ignore::Walk;
 use regex::{Captures, Regex, Replacer};
 use serde::{Deserialize, Serialize};
@@ -7,11 +8,21 @@ use std::{
 };
 use users::{get_current_gid, get_current_uid};
 
-struct EnvReplacer;
+struct EnvReplacer {
+    port_cache: PortCache,
+}
 
-impl Replacer for EnvReplacer {
+impl Replacer for &mut EnvReplacer {
     fn replace_append(&mut self, caps: &Captures<'_>, dst: &mut String) {
         let var = &caps[1];
+        if var == "PORT" {
+            let service_name = &caps[2];
+            let port = self.port_cache.get(service_name);
+
+            dst.push_str(&format!("{}", port));
+            return;
+        }
+
         let value = std::env::var(var);
         let value = value.unwrap_or_else(|_| {
             if var == "UID" {
@@ -79,6 +90,9 @@ pub fn bootstrap() {
     let current_dir = std::env::current_dir().unwrap();
 
     let re = Regex::new(r"\$\{([^}:]+)(?:\:([^}]+))?\}").unwrap();
+    let mut replacer = EnvReplacer {
+        port_cache: PortCache::default(),
+    };
 
     for result in Walk::new(&current_dir) {
         let entry = result.unwrap();
@@ -89,17 +103,38 @@ pub fn bootstrap() {
 
         if contains_in_dot(path) {
             let file_contents = read_to_string(path).unwrap();
-            let file_contents = re.replace_all(&file_contents, EnvReplacer);
+            let file_contents = re.replace_all(&file_contents, &mut replacer);
 
             if let Some(new_path) = strip_in_extension(path) {
                 write(&new_path, file_contents.as_ref()).unwrap();
 
-                println!("Wrote {}", new_path.display());
+                println!(
+                    "Wrote {}",
+                    new_path.strip_prefix(&current_dir).unwrap().display()
+                );
             } else {
                 eprintln!("Failed to write {}", path.display());
             }
         }
     }
+
+    let port_mapping = replacer.port_cache.mapping();
+    let port_mapping = port_mapping
+        .iter()
+        .map(|(service, port)| format!("{}: {}", service, port))
+        .collect::<Vec<_>>()
+        .join("\n");
+    let port_mapping_file_name = current_dir.join("port_mapping.txt");
+
+    write(&port_mapping_file_name, port_mapping).unwrap();
+
+    println!(
+        "Wrote {}",
+        port_mapping_file_name
+            .strip_prefix(&current_dir)
+            .unwrap()
+            .display()
+    );
 
     let compose_files = find_compose_files();
     let compose = DockerCompose {
@@ -111,5 +146,8 @@ pub fn bootstrap() {
     let file_name = current_dir.join("docker-compose.yml");
     write(&file_name, file_contents).unwrap();
 
-    println!("Wrote {}", file_name.display());
+    println!(
+        "Wrote {}",
+        file_name.strip_prefix(&current_dir).unwrap().display()
+    );
 }
