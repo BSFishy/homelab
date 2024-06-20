@@ -1,9 +1,8 @@
-use crate::{port_cache::PortCache, token_cache::TokenCache};
+use crate::{args::BootstrapArgs, config::Config, port_cache::PortCache, token_cache::TokenCache};
 use ignore::Walk;
 use regex::{Captures, Regex, Replacer};
 use serde::{Deserialize, Serialize};
 use std::{
-    collections::HashMap,
     fs::{read_to_string, write},
     path::{Path, PathBuf},
 };
@@ -96,19 +95,13 @@ struct DockerCompose {
     include: Vec<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-struct ConfigInfo {
-    ports: HashMap<String, u16>,
-    tokens: HashMap<String, String>,
-}
-
-pub fn bootstrap() {
+pub fn bootstrap(args: BootstrapArgs) {
     let current_dir = std::env::current_dir().unwrap();
 
     let re = Regex::new(r"\$\{([^}:]+)(?:\:([^}]+))?\}").unwrap();
     let mut replacer = EnvReplacer {
         port_cache: PortCache::default(),
-        token_cache: TokenCache::default(),
+        token_cache: TokenCache::new(&args),
     };
 
     for result in Walk::new(&current_dir) {
@@ -138,19 +131,10 @@ pub fn bootstrap() {
     let port_mapping = replacer.port_cache.mapping();
     let token_mapping = replacer.token_cache.mapping();
 
-    let info = ConfigInfo {
-        ports: port_mapping.clone(),
-        tokens: token_mapping.clone(),
-    };
-    let info = serde_json::to_string(&info).unwrap();
-    let info_file_name = current_dir.join("homelab.json");
-
-    write(&info_file_name, info).unwrap();
-
-    println!(
-        "Wrote {}",
-        info_file_name.strip_prefix(&current_dir).unwrap().display()
-    );
+    let mut config = Config::open_or_default();
+    config.ports = port_mapping.clone();
+    config.tokens = token_mapping.clone();
+    config.write();
 
     let compose_files = find_compose_files();
     let compose = DockerCompose {

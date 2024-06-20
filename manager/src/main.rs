@@ -2,8 +2,11 @@ use clap::Parser;
 
 mod args;
 mod bootstrap;
+mod cloudflare;
+mod config;
 mod port_cache;
 mod token_cache;
+mod tunnel;
 
 fn main() {
     use args::Command;
@@ -11,6 +14,6 @@ fn main() {
     let args = args::Args::parse();
 
     match args.command {
-        Command::Bootstrap => bootstrap::bootstrap(),
+        Command::Bootstrap(args) => bootstrap::bootstrap(args),
     }
 }
