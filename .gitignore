@@ -4,6 +4,9 @@
 # Ignore Rust output
 /target
 
+# Ignore generated docker compose file
+/docker-compose.yml
+
 # Ignore temporary and system files
 *.tmp
 *.swp

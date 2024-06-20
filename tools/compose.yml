@@ -1,3 +1,0 @@
-include:
-  - dozzle/compose.yml
-  - grafana/compose.yml

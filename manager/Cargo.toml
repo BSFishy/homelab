@@ -12,6 +12,12 @@ clap = { version = "4.5", default-features = true, features = [
   "env",
   "wrap_help",
 ] }
+glob = "0.3"
 ignore = "0.4"
 regex = "1.10"
+serde = { version = "1.0", default-features = true, features = [
+  "derive",
+  "alloc",
+] }
+serde_yaml = "0.9"
 users = { version = "0.11", default-features = false }
