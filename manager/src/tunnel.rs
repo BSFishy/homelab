@@ -43,8 +43,9 @@ pub fn tunnel(args: &BootstrapArgs) -> CloudflareTunnel {
     let tunnel = cloudflare.create_tunnel(&account.id, TUNNEL_NAME, &tunnel_secret);
 
     config.cloudflare.tunnel = Some(CloudflareTunnelConfig {
-        secret: tunnel_secret,
+        id: tunnel.id.clone(),
         token: tunnel.token.clone(),
+        secret: tunnel_secret,
     });
 
     config.write();

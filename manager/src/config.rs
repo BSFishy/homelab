@@ -39,6 +39,7 @@ pub struct CloudflareUserConfig {
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct CloudflareTunnelConfig {
+    pub id: String,
     pub token: String,
     pub secret: String,
 }
