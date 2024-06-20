@@ -1,0 +1,9 @@
+services:
+  tunnel:
+    image: cloudflare/cloudflared
+    container_name: cloudflared-tunnel
+    network_mode: host
+    environment:
+      - TUNNEL_TOKEN=${TOKEN:cloudflared}
+    restart: unless-stopped
+    command: tunnel run

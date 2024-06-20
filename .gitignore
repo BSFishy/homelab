@@ -7,8 +7,8 @@
 # Ignore generated docker compose file
 /docker-compose.yml
 
-# Ignore generated port mapping file
-/port_mapping.txt
+# Ignore generated information file
+/homelab.json
 
 # Ignore temporary and system files
 *.tmp

@@ -3,6 +3,7 @@ use clap::Parser;
 mod args;
 mod bootstrap;
 mod port_cache;
+mod token_cache;
 
 fn main() {
     use args::Command;
