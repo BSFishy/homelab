@@ -1,8 +1,10 @@
 # homelab
 
-Setup for running my homelab configuration. Currently, this is just a Docker
-Compose configuration, however I might expand this to include some sort of
-bootstrap script to streamline the configuration and preparation of the Docker setup.
+Setup for running my homelab configuration. This includes both configuration
+for Docker services, as well as an orchestration utility. The utility will
+automatically negotiate port numbers for all of the services, read in
+environment variables for use in the Docker compose files, and automatically
+configure a Cloudflare tunnel.
 
 ## Usage
 
@@ -88,6 +90,6 @@ Here is a list of things that I want to do with this setup:
 - [x] Create or utilize a tool for templating to streamline the bootstrap
       process. For example, automatically retrieve the current user ID for
       proper file permissions.
-  - [ ] Extend bootstrap tool to automatically set up the Cloudflare tunnel if desired
-  - [ ] Make bootstrap process negotiate port numbers then output something for
+  - [x] Extend bootstrap tool to automatically set up the Cloudflare tunnel if desired
+  - [x] Make bootstrap process negotiate port numbers then output something for
         reference on port numbers
