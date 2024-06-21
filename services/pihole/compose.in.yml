@@ -1,0 +1,21 @@
+services:
+  pihole:
+    image: pihole/pihole:latest
+    container_name: pihole
+    environment:
+      PIHOLE_UID: ${UID}
+      PIHOLE_GID: ${GID}
+      # FIXME: here for testing
+      VIRTUAL_HOST: 127.0.0.1
+      TZ: "America/Chicago"
+      # WEBPASSWORD: 'set a secure password here or it will be random'
+    # Volumes store your data between container upgrades
+    volumes:
+      - "./etc-pihole:/etc/pihole"
+      - "./etc-dnsmasq.d:/etc/dnsmasq.d"
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "${PORT:pihole}:80/tcp"
+    #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
+    restart: unless-stopped
