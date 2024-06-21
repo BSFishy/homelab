@@ -4,6 +4,7 @@ mod args;
 mod bootstrap;
 mod cloudflare;
 mod config;
+mod configure;
 mod port_cache;
 mod token_cache;
 mod tunnel;

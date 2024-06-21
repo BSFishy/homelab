@@ -1,4 +1,7 @@
-use crate::{args::BootstrapArgs, config::Config, port_cache::PortCache, token_cache::TokenCache};
+use crate::{
+    args::BootstrapArgs, config::Config, configure::configure, port_cache::PortCache,
+    token_cache::TokenCache,
+};
 use ignore::Walk;
 use regex::{Captures, Regex, Replacer};
 use serde::{Deserialize, Serialize};
@@ -150,4 +153,6 @@ pub fn bootstrap(args: BootstrapArgs) {
         "Wrote {}",
         file_name.strip_prefix(&current_dir).unwrap().display()
     );
+
+    configure();
 }
