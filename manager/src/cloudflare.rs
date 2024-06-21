@@ -120,6 +120,82 @@ impl Cloudflare {
         zones
     }
 
+    pub fn list_dns_records(&self, zone_id: impl AsRef<str>) -> Vec<Record> {
+        let response = self
+            .client
+            .get(format!(
+                "https://api.cloudflare.com/client/v4/zones/{}/dns_records",
+                zone_id.as_ref()
+            ))
+            .send()
+            .unwrap();
+
+        if !response.status().is_success() {
+            panic!("Failed to get DNS records");
+        }
+
+        let body = response.text().unwrap();
+        let body: serde_json::Value = serde_json::from_str(&body).unwrap();
+        let records: Vec<_> = body["result"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|record| Record {
+                id: record["id"].as_str().unwrap().to_string(),
+                name: record["name"].as_str().unwrap().to_string(),
+                content: record["content"].as_str().unwrap().to_string(),
+                record_type: record["type"].as_str().unwrap().to_string(),
+                comment: record["comment"].as_str().map(str::to_string),
+            })
+            .collect();
+
+        records
+    }
+
+    pub fn create_dns_record(&self, zone_id: impl AsRef<str>, record: &Record) {
+        let id = uuid::Uuid::new_v4().to_string();
+        let body = serde_json::json!({
+            "content": record.content,
+            "name": record.name,
+            "type": record.record_type,
+            "comment": record.comment,
+            "id": id,
+            "proxied": true,
+        });
+        let body = serde_json::to_string(&body).unwrap();
+
+        let response = self
+            .client
+            .post(format!(
+                "https://api.cloudflare.com/client/v4/zones/{}/dns_records",
+                zone_id.as_ref()
+            ))
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(body)
+            .send()
+            .unwrap();
+
+        if !response.status().is_success() {
+            panic!("Failed to create DNS record for {}", record.name);
+        }
+    }
+
+    pub fn delete_dns_record(&self, zone_id: impl AsRef<str>, record_id: impl AsRef<str>) {
+        let response = self
+            .client
+            .delete(format!(
+                "https://api.cloudflare.com/client/v4/zones/{}/dns_records/{}",
+                zone_id.as_ref(),
+                record_id.as_ref()
+            ))
+            .send()
+            .unwrap();
+
+        if !response.status().is_success() {
+            panic!("Failed to delete record {}", record_id.as_ref());
+        }
+    }
+
     pub fn list_tunnels(&self, account_id: impl AsRef<str>) -> Vec<CloudflareTunnelList> {
         let response = self
             .client
@@ -249,82 +325,6 @@ impl Cloudflare {
 
         if !response.status().is_success() {
             panic!("Failed to configure tunnel");
-        }
-    }
-
-    pub fn list_dns_records(&self, zone_id: impl AsRef<str>) -> Vec<Record> {
-        let response = self
-            .client
-            .get(format!(
-                "https://api.cloudflare.com/client/v4/zones/{}/dns_records",
-                zone_id.as_ref()
-            ))
-            .send()
-            .unwrap();
-
-        if !response.status().is_success() {
-            panic!("Failed to get DNS records");
-        }
-
-        let body = response.text().unwrap();
-        let body: serde_json::Value = serde_json::from_str(&body).unwrap();
-        let records: Vec<_> = body["result"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .map(|record| Record {
-                id: record["id"].as_str().unwrap().to_string(),
-                name: record["name"].as_str().unwrap().to_string(),
-                content: record["content"].as_str().unwrap().to_string(),
-                record_type: record["type"].as_str().unwrap().to_string(),
-                comment: record["comment"].as_str().map(str::to_string),
-            })
-            .collect();
-
-        records
-    }
-
-    pub fn create_dns_record(&self, zone_id: impl AsRef<str>, record: &Record) {
-        let id = uuid::Uuid::new_v4().to_string();
-        let body = serde_json::json!({
-            "content": record.content,
-            "name": record.name,
-            "type": record.record_type,
-            "comment": record.comment,
-            "id": id,
-            "proxied": true,
-        });
-        let body = serde_json::to_string(&body).unwrap();
-
-        let response = self
-            .client
-            .post(format!(
-                "https://api.cloudflare.com/client/v4/zones/{}/dns_records",
-                zone_id.as_ref()
-            ))
-            .header(header::CONTENT_TYPE, "application/json")
-            .body(body)
-            .send()
-            .unwrap();
-
-        if !response.status().is_success() {
-            panic!("Failed to create DNS record for {}", record.name);
-        }
-    }
-
-    pub fn delete_dns_record(&self, zone_id: impl AsRef<str>, record_id: impl AsRef<str>) {
-        let response = self
-            .client
-            .delete(format!(
-                "https://api.cloudflare.com/client/v4/zones/{}/dns_records/{}",
-                zone_id.as_ref(),
-                record_id.as_ref()
-            ))
-            .send()
-            .unwrap();
-
-        if !response.status().is_success() {
-            panic!("Failed to delete record {}", record_id.as_ref());
         }
     }
 }
