@@ -102,3 +102,4 @@ Here is a list of things that I want to do with this setup:
   - [x] Make bootstrap process negotiate port numbers then output something for
         reference on port numbers
   - [x] Track services and set them up in pihole and nginx
+  - [ ] Generate SSL certificates so that requests are served over HTTPS
