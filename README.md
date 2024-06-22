@@ -101,3 +101,4 @@ Here is a list of things that I want to do with this setup:
   - [x] Extend bootstrap tool to automatically set up the Cloudflare tunnel if desired
   - [x] Make bootstrap process negotiate port numbers then output something for
         reference on port numbers
+  - [ ] Track services and set them up in pihole and nginx
