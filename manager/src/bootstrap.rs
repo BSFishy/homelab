@@ -90,7 +90,7 @@ pub fn bootstrap(args: BootstrapArgs) {
                         .iter_mut()
                         .find(|domain| &domain.host == service_domain)
                     {
-                        domain.ip = local_ip.clone();
+                        domain.ip.clone_from(&local_ip);
                         println!("Updated the IP for {}", service_domain);
                     } else {
                         domains.push(crate::pihole::Domain {

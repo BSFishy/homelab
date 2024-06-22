@@ -1,3 +1,5 @@
+#![allow(clippy::absurd_extreme_comparisons)]
+
 use std::{
     collections::HashMap,
     net::{IpAddr, Ipv4Addr, SocketAddr, TcpListener},

@@ -15,10 +15,10 @@ pub fn template(
     let re = Regex::new(r"\$\{([^}:]+)(?:\:([^}]+))?\}").unwrap();
     let mut replacer = EnvReplacer {
         port_cache: PortCache::default(),
-        token_cache: TokenCache::new(&args),
+        token_cache: TokenCache::new(args),
     };
 
-    for result in Walk::new(&dir) {
+    for result in Walk::new(dir) {
         let entry = result.unwrap();
         let path = entry.path();
         if path.is_dir() {
@@ -32,7 +32,7 @@ pub fn template(
             if let Some(new_path) = strip_in_extension(path) {
                 write(&new_path, file_contents.as_ref()).unwrap();
 
-                println!("Wrote {}", new_path.strip_prefix(&dir).unwrap().display());
+                println!("Wrote {}", new_path.strip_prefix(dir).unwrap().display());
             } else {
                 eprintln!("Failed to write {}", path.display());
             }
