@@ -68,10 +68,6 @@ pub fn configure(services: &Vec<Service>) {
     let mut domains = cloudflare.list_fallback_domains(&account.id);
     let mut includes = cloudflare.list_split_tunnel_includes(&account.id);
     for service in services {
-        if !service.enabled {
-            continue;
-        }
-
         if let Some(domain_name) = &service.domain {
             if domains.iter().any(|domain| &domain.suffix == domain_name) {
                 println!("Domain {} already exists, skipping", domain_name);

@@ -6,14 +6,15 @@ pub struct Service {
     pub enabled: bool,
     pub domain: Option<String>,
     #[serde(with = "ports_format")]
+    #[serde(default)]
     pub ports: Vec<Port>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Port {
-    value: String,
+    pub value: String,
     #[serde(rename = "type")]
-    port_type: String,
+    pub port_type: String,
 }
 
 mod ports_format {

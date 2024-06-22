@@ -1,0 +1,10 @@
+services:
+  nginx:
+    image: nginx
+    container_name: nginx
+    network_mode: host
+    environment:
+      - NGINX_PORT=80
+    volumes:
+      - ./config:/etc/nginx/conf.d
+      - ./nginx.conf:/etc/nginx/nginx.conf

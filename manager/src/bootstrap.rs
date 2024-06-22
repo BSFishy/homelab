@@ -2,6 +2,7 @@ use crate::{
     args::BootstrapArgs,
     config::Config,
     configure::configure,
+    nginx::generate_conf,
     pihole::{read_list, write_list},
     service::Service,
     template::template,
@@ -15,6 +16,9 @@ use std::{
 
 const PIHOLE_SERVICE_NAME: &str = "pihole";
 const PIHOLE_LIST_PATH: &str = "etc-pihole/custom.list";
+const NGINX_SERVICE_NAME: &str = "nginx";
+const NGINX_CONF_PATH: &str = "config";
+const WEB_PORT_TYPE: &str = "web";
 
 fn find_compose_files() -> Vec<String> {
     glob::glob("**/compose.yml")
@@ -30,6 +34,7 @@ fn find_service_files() -> Vec<(PathBuf, Service)> {
         .map(|entry| entry.unwrap())
         .map(|path| (path.clone(), read_to_string(path).unwrap()))
         .map(|(path, contents)| (path, serde_json::from_str::<Service>(&contents).unwrap()))
+        .filter(|(_, service)| service.enabled)
         .collect()
 }
 
@@ -106,6 +111,41 @@ pub fn bootstrap(args: BootstrapArgs) {
             write_list(&list_path, domains);
 
             println!("Updated DNS list");
+        }
+    }
+
+    {
+        if let Some((path, _service)) = services
+            .iter()
+            .find(|(_, service)| service.name == NGINX_SERVICE_NAME)
+        {
+            let local_ip = local_ip().unwrap();
+            let local_ip = format!("{}", local_ip);
+
+            let config_path = path.parent().unwrap().join(NGINX_CONF_PATH);
+
+            for (_, service) in &services {
+                let domain_name = match &service.domain {
+                    Some(domain_name) => domain_name,
+                    None => continue,
+                };
+
+                let port = match service
+                    .ports
+                    .iter()
+                    .find(|port| port.port_type == WEB_PORT_TYPE)
+                {
+                    Some(port) => port.value.parse::<u16>().unwrap(),
+                    None => continue,
+                };
+
+                let service_path = config_path.join(format!("{}.conf", service.name));
+                let config_contents = generate_conf(&local_ip, domain_name, port);
+
+                write(&service_path, config_contents).unwrap();
+
+                println!("Wrote nginx config file {}", service_path.display());
+            }
         }
     }
 

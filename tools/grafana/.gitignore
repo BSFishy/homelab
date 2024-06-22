@@ -1,5 +1,6 @@
-# Ignore generated compose file
+# Ignore generated bootstrap files
 /compose.yml
+/service.json
 
 # Ignore Grafana database file
 data/grafana.db

@@ -1,4 +1,4 @@
-# Ignore generated compose file
+# Ignore generated bootstrap files
 /compose.yml
 
 # Ignore the cloud directory (usually contains sensitive data)

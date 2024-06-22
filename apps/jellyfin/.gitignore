@@ -1,5 +1,6 @@
-# Ignore generated compose file
+# Ignore generated bootstrap file
 /compose.yml
+/service.json
 
 # Ignore cache directory
 config/cache/

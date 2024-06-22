@@ -1,0 +1,6 @@
+{
+  "name": "jellyfin",
+  "enabled": true,
+  "domain": "jellyfin.local",
+  "ports": [{ "value": "${PORT:jellyfin}", "type": "web" }]
+}
