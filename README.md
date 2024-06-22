@@ -6,6 +6,14 @@ automatically negotiate port numbers for all of the services, read in
 environment variables for use in the Docker compose files, and automatically
 configure a Cloudflare tunnel.
 
+> [!WARNING]
+> The code in this codebase is pretty bad. Right now, I'm getting stuff
+> working, so I'm not really worried about making things "production ready"
+> (the code still works, and my priority is really just making it work). I
+> would advise discretion before diving into the code and prepare to jump around
+> a lot. Additionally, it's written basically only for my own use-case, so be
+> cautious if your use-case is anything outside of exactly what I want.
+
 ## Usage
 
 ### Bootstrapping
