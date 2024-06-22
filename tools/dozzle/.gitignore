@@ -1,2 +1,3 @@
-# Ignore generated compose file
+# Ignore generated bootstrap files
 /compose.yml
+/service.json

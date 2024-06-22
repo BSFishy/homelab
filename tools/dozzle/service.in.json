@@ -1,0 +1,6 @@
+{
+  "name": "dozzle",
+  "enabled": true,
+  "domain": "dozzle.local",
+  "ports": [{ "value": "${PORT:dozzle}", "type": "web" }]
+}

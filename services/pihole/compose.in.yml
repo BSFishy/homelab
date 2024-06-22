@@ -5,8 +5,7 @@ services:
     environment:
       PIHOLE_UID: ${UID}
       PIHOLE_GID: ${GID}
-      # FIXME: here for testing
-      VIRTUAL_HOST: 127.0.0.1
+      VIRTUAL_HOST: pihole.local
       TZ: "America/Chicago"
       # WEBPASSWORD: 'set a secure password here or it will be random'
     # Volumes store your data between container upgrades

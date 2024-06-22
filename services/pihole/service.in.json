@@ -1,0 +1,9 @@
+{
+  "name": "pihole",
+  "enabled": true,
+  "domain": "pihole.local",
+  "ports": [
+    { "value": "${PORT:pihole}", "type": "web" },
+    { "value": "53", "type": "other" }
+  ]
+}

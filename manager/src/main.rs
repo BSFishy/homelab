@@ -5,6 +5,7 @@ mod bootstrap;
 mod cloudflare;
 mod config;
 mod configure;
+mod pihole;
 mod port_cache;
 mod service;
 mod template;
