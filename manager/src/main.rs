@@ -6,6 +6,8 @@ mod cloudflare;
 mod config;
 mod configure;
 mod port_cache;
+mod service;
+mod template;
 mod token_cache;
 mod tunnel;
 
