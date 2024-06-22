@@ -3,8 +3,6 @@ use reqwest::{
     header::{self, HeaderMap, HeaderValue},
 };
 
-use crate::config::CloudflareWebsiteConfig;
-
 #[derive(Debug)]
 pub struct Cloudflare {
     client: Client,
@@ -37,18 +35,36 @@ pub struct CloudflareTunnel {
 }
 
 #[derive(Debug)]
-pub struct Service {
+pub struct CloudflareTunnelRoute {
+    pub id: String,
+    pub network: String,
+    pub tunnel_id: String,
+    pub deleted: bool,
+}
+
+#[derive(Debug, Clone)]
+pub struct CloudflareVirtualNetwork {
+    pub id: String,
     pub name: String,
-    pub port: u16,
+    pub comment: Option<String>,
+    pub default: bool,
+    pub deleted: bool,
 }
 
 #[derive(Debug)]
-pub struct Record {
-    pub id: String,
-    pub name: String,
-    pub content: String,
-    pub record_type: String,
-    pub comment: Option<String>,
+pub struct CloudflareDomainFallback {
+    pub description: Option<String>,
+    pub dns_server: Vec<String>,
+    pub suffix: String,
+}
+
+// Technically, its either address or host but I don't really care enough to do it correctly right
+// now
+#[derive(Debug)]
+pub struct CloudflareInclude {
+    pub address: Option<String>,
+    pub description: Option<String>,
+    pub host: Option<String>,
 }
 
 impl Cloudflare {
@@ -118,82 +134,6 @@ impl Cloudflare {
             .collect();
 
         zones
-    }
-
-    pub fn list_dns_records(&self, zone_id: impl AsRef<str>) -> Vec<Record> {
-        let response = self
-            .client
-            .get(format!(
-                "https://api.cloudflare.com/client/v4/zones/{}/dns_records",
-                zone_id.as_ref()
-            ))
-            .send()
-            .unwrap();
-
-        if !response.status().is_success() {
-            panic!("Failed to get DNS records");
-        }
-
-        let body = response.text().unwrap();
-        let body: serde_json::Value = serde_json::from_str(&body).unwrap();
-        let records: Vec<_> = body["result"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .map(|record| Record {
-                id: record["id"].as_str().unwrap().to_string(),
-                name: record["name"].as_str().unwrap().to_string(),
-                content: record["content"].as_str().unwrap().to_string(),
-                record_type: record["type"].as_str().unwrap().to_string(),
-                comment: record["comment"].as_str().map(str::to_string),
-            })
-            .collect();
-
-        records
-    }
-
-    pub fn create_dns_record(&self, zone_id: impl AsRef<str>, record: &Record) {
-        let id = uuid::Uuid::new_v4().to_string();
-        let body = serde_json::json!({
-            "content": record.content,
-            "name": record.name,
-            "type": record.record_type,
-            "comment": record.comment,
-            "id": id,
-            "proxied": true,
-        });
-        let body = serde_json::to_string(&body).unwrap();
-
-        let response = self
-            .client
-            .post(format!(
-                "https://api.cloudflare.com/client/v4/zones/{}/dns_records",
-                zone_id.as_ref()
-            ))
-            .header(header::CONTENT_TYPE, "application/json")
-            .body(body)
-            .send()
-            .unwrap();
-
-        if !response.status().is_success() {
-            panic!("Failed to create DNS record for {}", record.name);
-        }
-    }
-
-    pub fn delete_dns_record(&self, zone_id: impl AsRef<str>, record_id: impl AsRef<str>) {
-        let response = self
-            .client
-            .delete(format!(
-                "https://api.cloudflare.com/client/v4/zones/{}/dns_records/{}",
-                zone_id.as_ref(),
-                record_id.as_ref()
-            ))
-            .send()
-            .unwrap();
-
-        if !response.status().is_success() {
-            panic!("Failed to delete record {}", record_id.as_ref());
-        }
     }
 
     pub fn list_tunnels(&self, account_id: impl AsRef<str>) -> Vec<CloudflareTunnelList> {
@@ -283,40 +223,58 @@ impl Cloudflare {
         }
     }
 
-    pub fn configure_tunnel(
-        &self,
-        account_id: impl AsRef<str>,
-        tunnel_id: impl AsRef<str>,
-        website: &CloudflareWebsiteConfig,
-        services: &Vec<Service>,
-    ) {
-        let mut services: Vec<_> = services
+    pub fn list_tunnel_routes(&self, account_id: impl AsRef<str>) -> Vec<CloudflareTunnelRoute> {
+        let response = self
+            .client
+            .get(format!(
+                "https://api.cloudflare.com/client/v4/accounts/{}/teamnet/routes",
+                account_id.as_ref()
+            ))
+            .send()
+            .unwrap();
+
+        if !response.status().is_success() {
+            panic!("Failed to list tunnel routes");
+        }
+
+        let body = response.text().unwrap();
+        let body: serde_json::Value = serde_json::from_str(&body).unwrap();
+        let routes: Vec<_> = body["result"]
+            .as_array()
+            .unwrap()
             .iter()
-            .map(|service| {
-                serde_json::json!({
-                    "hostname": format!("{}.{}", service.name, website.name),
-                    "service": format!("http://127.0.0.1:{}", service.port),
-                })
+            .map(|entry| CloudflareTunnelRoute {
+                id: entry["id"].as_str().unwrap().to_string(),
+                network: entry["network"].as_str().unwrap().to_string(),
+                tunnel_id: entry["tunnel_id"].as_str().unwrap().to_string(),
+                deleted: !entry["deleted_at"].is_null(),
             })
             .collect();
 
-        services.push(serde_json::json!({
-            "service": "http_status:404"
-        }));
+        routes
+    }
 
+    pub fn create_tunnel_route(
+        &self,
+        account_id: impl AsRef<str>,
+        tunnel_id: impl AsRef<str>,
+        virtual_network_id: impl AsRef<str>,
+        network: impl AsRef<str>,
+        comment: Option<String>,
+    ) {
         let body = serde_json::json!({
-            "config": {
-                "ingress": services,
-            },
+            "comment": comment,
+            "network": network.as_ref(),
+            "tunnel_id": tunnel_id.as_ref(),
+            "virtual_network_id": virtual_network_id.as_ref(),
         });
         let body = serde_json::to_string(&body).unwrap();
 
         let response = self
             .client
-            .put(format!(
-                "https://api.cloudflare.com/client/v4/accounts/{}/cfd_tunnel/{}/configurations",
-                account_id.as_ref(),
-                tunnel_id.as_ref()
+            .post(format!(
+                "https://api.cloudflare.com/client/v4/accounts/{}/teamnet/routes",
+                account_id.as_ref()
             ))
             .header(header::CONTENT_TYPE, "application/json")
             .body(body)
@@ -324,7 +282,259 @@ impl Cloudflare {
             .unwrap();
 
         if !response.status().is_success() {
-            panic!("Failed to configure tunnel");
+            panic!("Failed to create tunnel route for {}", network.as_ref());
+        }
+    }
+
+    pub fn delete_tunnel_route(&self, account_id: impl AsRef<str>, route_id: impl AsRef<str>) {
+        let response = self
+            .client
+            .delete(format!(
+                "https://api.cloudflare.com/client/v4/accounts/{}/teamnet/routes/{}",
+                account_id.as_ref(),
+                route_id.as_ref()
+            ))
+            .send()
+            .unwrap();
+
+        if !response.status().is_success() {
+            panic!("Failed to delete tunnel {}", route_id.as_ref());
+        }
+    }
+
+    pub fn list_virtual_networks(
+        &self,
+        account_id: impl AsRef<str>,
+    ) -> Vec<CloudflareVirtualNetwork> {
+        let response = self
+            .client
+            .get(format!(
+                "https://api.cloudflare.com/client/v4/accounts/{}/teamnet/virtual_networks",
+                account_id.as_ref()
+            ))
+            .send()
+            .unwrap();
+
+        if !response.status().is_success() {
+            panic!("Failed to list virtual networks");
+        }
+
+        let body = response.text().unwrap();
+        let body: serde_json::Value = serde_json::from_str(&body).unwrap();
+        let networks: Vec<_> = body["result"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|entry| CloudflareVirtualNetwork {
+                id: entry["id"].as_str().unwrap().to_string(),
+                name: entry["name"].as_str().unwrap().to_string(),
+                comment: entry["comment"].as_str().map(str::to_string),
+                default: entry["is_default_network"].as_bool().unwrap(),
+                deleted: !entry["deleted_at"].is_null(),
+            })
+            .collect();
+
+        networks
+    }
+
+    pub fn create_virtual_network(
+        &self,
+        account_id: impl AsRef<str>,
+        name: impl AsRef<str>,
+        comment: Option<String>,
+        default: bool,
+    ) -> CloudflareVirtualNetwork {
+        let body = serde_json::json!({
+            "comment": comment,
+            "is_default": default,
+            "name": name.as_ref(),
+        });
+        let body = serde_json::to_string(&body).unwrap();
+
+        let response = self
+            .client
+            .post(format!(
+                "https://api.cloudflare.com/client/v4/accounts/{}/teamnet/virtual_networks",
+                account_id.as_ref()
+            ))
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(body)
+            .send()
+            .unwrap();
+
+        if !response.status().is_success() {
+            panic!("Failed to create virtual network {}", name.as_ref());
+        }
+
+        let body = response.text().unwrap();
+        let body: serde_json::Value = serde_json::from_str(&body).unwrap();
+
+        CloudflareVirtualNetwork {
+            id: body["result"]["id"].as_str().unwrap().to_string(),
+            name: body["result"]["name"].as_str().unwrap().to_string(),
+            comment: body["result"]["comment"].as_str().map(str::to_string),
+            default: body["result"]["is_default_network"].as_bool().unwrap(),
+            deleted: false,
+        }
+    }
+
+    pub fn enable_gateway_proxy(&self, account_id: impl AsRef<str>) {
+        let body = serde_json::json!({
+            "gateway_proxy_enabled": true,
+            "gateway_udp_proxy_enabled": true,
+        });
+        let body = serde_json::to_string(&body).unwrap();
+
+        let response = self
+            .client
+            .put(format!(
+                "https://api.cloudflare.com/client/v4/accounts/{}/devices/settings",
+                account_id.as_ref()
+            ))
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(body)
+            .send()
+            .unwrap();
+
+        if !response.status().is_success() {
+            panic!("Failed to enable gateway proxy");
+        }
+    }
+
+    pub fn list_fallback_domains(
+        &self,
+        account_id: impl AsRef<str>,
+    ) -> Vec<CloudflareDomainFallback> {
+        let response = self
+            .client
+            .get(format!(
+                "https://api.cloudflare.com/client/v4/accounts/{}/devices/policy/fallback_domains",
+                account_id.as_ref()
+            ))
+            .send()
+            .unwrap();
+
+        if !response.status().is_success() {
+            panic!("Failed to list fallback domains");
+        }
+
+        let body = response.text().unwrap();
+        let body: serde_json::Value = serde_json::from_str(&body).unwrap();
+        let domains: Vec<_> = body["result"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|entry| CloudflareDomainFallback {
+                description: entry["description"].as_str().map(str::to_string),
+                dns_server: entry["dns_server"]
+                    .as_array()
+                    .unwrap_or(&vec![])
+                    .iter()
+                    .map(|url| url.as_str().unwrap().to_string())
+                    .collect(),
+                suffix: entry["suffix"].as_str().unwrap().to_string(),
+            })
+            .collect();
+
+        domains
+    }
+
+    pub fn set_fallback_domains(
+        &self,
+        account_id: impl AsRef<str>,
+        domains: Vec<CloudflareDomainFallback>,
+    ) {
+        let domains: Vec<_> = domains
+            .iter()
+            .map(|domain| {
+                serde_json::json!({
+                    "description": domain.description,
+                    "dns_server": domain.dns_server,
+                    "suffix": domain.suffix,
+                })
+            })
+            .collect();
+        let body = serde_json::to_string(&domains).unwrap();
+
+        let response = self
+            .client
+            .put(format!(
+                "https://api.cloudflare.com/client/v4/accounts/{}/devices/policy/fallback_domains",
+                account_id.as_ref()
+            ))
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(body)
+            .send()
+            .unwrap();
+
+        if !response.status().is_success() {
+            panic!("Failed to set backup domains");
+        }
+    }
+
+    pub fn list_split_tunnel_includes(
+        &self,
+        account_id: impl AsRef<str>,
+    ) -> Vec<CloudflareInclude> {
+        let response = self
+            .client
+            .get(format!(
+                "https://api.cloudflare.com/client/v4/accounts/{}/devices/policy/include",
+                account_id.as_ref()
+            ))
+            .send()
+            .unwrap();
+
+        if !response.status().is_success() {
+            panic!("Failed to list split tunnel includes");
+        }
+
+        let body = response.text().unwrap();
+        let body: serde_json::Value = serde_json::from_str(&body).unwrap();
+        let includes: Vec<_> = body["result"]
+            .as_array()
+            .unwrap_or(&vec![])
+            .iter()
+            .map(|entry| CloudflareInclude {
+                address: entry["address"].as_str().map(str::to_string),
+                description: entry["description"].as_str().map(str::to_string),
+                host: entry["host"].as_str().map(str::to_string),
+            })
+            .collect();
+
+        includes
+    }
+
+    pub fn set_split_tunnel_includes(
+        &self,
+        account_id: impl AsRef<str>,
+        includes: Vec<CloudflareInclude>,
+    ) {
+        let includes: Vec<_> = includes
+            .iter()
+            .map(|include| {
+                serde_json::json!({
+                    "address": include.address,
+                    "description": include.description,
+                    "host": include.host,
+                })
+            })
+            .collect();
+        let body = serde_json::to_string(&includes).unwrap();
+
+        let response = self
+            .client
+            .put(format!(
+                "https://api.cloudflare.com/client/v4/accounts/{}/devices/policy/include",
+                account_id.as_ref()
+            ))
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(body)
+            .send()
+            .unwrap();
+
+        if !response.status().is_success() {
+            panic!("Failed to set split tunnel includes");
         }
     }
 }

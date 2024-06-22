@@ -35,6 +35,16 @@ pub fn tunnel(args: &BootstrapArgs) -> CloudflareTunnel {
             continue;
         }
 
+        let routes = cloudflare.list_tunnel_routes(&account.id);
+        for route in routes {
+            if route.tunnel_id != tunnel.id || route.deleted {
+                continue;
+            }
+
+            println!("Deleting tunnel route {} ({})", route.network, route.id);
+            cloudflare.delete_tunnel_route(&account.id, &route.id);
+        }
+
         println!("Deleting existing tunnel {} ({})", tunnel.name, tunnel.id);
         cloudflare.delete_tunnel(&account.id, tunnel.id);
     }

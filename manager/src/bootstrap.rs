@@ -155,4 +155,6 @@ pub fn bootstrap(args: BootstrapArgs) {
     );
 
     configure();
+
+    println!("Successfully configured the project");
 }
