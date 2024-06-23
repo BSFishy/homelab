@@ -9,7 +9,7 @@ etc-dnsmasq.d/
 etc-pihole/custom.list
 etc-pihole/dhcp.leases
 etc-pihole/dns-servers.conf
-etc-pihole/gravity.db
+etc-pihole/gravity*.db
 etc-pihole/list.*.domains
 etc-pihole/list.*.domains.sha1
 etc-pihole/local.list
