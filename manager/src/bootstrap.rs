@@ -17,7 +17,7 @@ use std::{
 const PIHOLE_SERVICE_NAME: &str = "pihole";
 const PIHOLE_LIST_PATH: &str = "etc-pihole/custom.list";
 const NGINX_SERVICE_NAME: &str = "nginx";
-const NGINX_CONF_PATH: &str = "config";
+const NGINX_CONF_PATH: &str = "config/nginx/site-confs";
 const WEB_PORT_TYPE: &str = "web";
 
 fn find_compose_files() -> Vec<String> {
