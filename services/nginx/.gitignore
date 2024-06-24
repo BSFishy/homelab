@@ -1,2 +1,26 @@
+# Ignore generated bootstrap files
+/compose.yml
+
+# Samples
+*.sample
+
+# SSL certificates
+/config/keys
+
+# nginx logs
+/config/log
+
 # Generated nginx config files
-/config/*.conf
+/config/nginx/site-confs/*.conf
+
+# unneeded nginx files
+/config/nginx/dhparams.pem
+/config/nginx/resolver.conf
+/config/nginx/worker_processes.conf
+
+# other files...?
+/config/php
+/config/www
+
+# Migrations log
+/config/.migrations
