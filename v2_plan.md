@@ -1,201 +1,259 @@
-# v2 plan
+# Homelab Management System v2 Plan
 
-This document outlines the plan for the manager version 2. This is a complete rewrite
-now that I know what it needs to be able to do and this document is basically just
-to create a plan and to give myself reference when implementing v2.
+## Overview
 
-Some major features of this version include:
+This document outlines the plan for version 2 of the Homelab Management System.
+The system aims to provide an easy-to-use, robust, and scalable solution for managing
+a homelab environment using Hashicorp's Nomad, Consul, and Vault.
 
-- Global authentication
-- Specifying services as public or private
-- Agnostic across different implementations of functionality, i.e. VPNs, DNS, authentication
-- Distributable across multiple machines
+## Scope
 
-## Authentication
+The Homelab Management System is responsible for:
 
-Authentication is an important part of any system. It is imperative that the homelab
-facilitates and enforces a strong security system using well known and trusted technologies.
+- Configuring and deploying services in the homelab environment
+- Managing integrations with external services (VPN, DNS, etc.)
+- Providing a user-friendly interface for homelab management
 
-To begin with, I am going to use Authelia, most likely in conjunction with some
-sort of LDAP system. This will hook into the reverse proxy (nginx) to ensure that
-each service is authenticated and doesn't allow prying eyes.
+The following are explicitly out of scope for this project:
 
-### SSL
+- Installation and updates of Nomad, Consul, and Vault
+- Updates to the Homelab Management System itself
+- Low-level network configuration (e.g., setting up VLANs)
+- Hardware management
 
-Getting all services running on SSL is important. This provides an additional layer
-of security and helps prevent certain types of attacks. Granted, private access
-should be under the safety of a VPN solution, HTTPS is a desirable feature and should
-be considered high priority.
+## System Architecture
 
-I have gone back and forth with this, as I feel it could be rather difficult. It
-will most likely involve creating a certificate authority, since we will most likely
-be using domains like `*.local`, which most likely won't be easy to get certificates
-for with regular authorities. It will also involve generating the certificates and
-rolling them as needed, which I also don't know much about in a Docker (Compose)
-environment.
+The system will consist of the following components:
 
-### Authentication considerations
+1. Hashicorp Nomad: For service orchestration and scheduling
+2. Hashicorp Consul: For service discovery, health checking, and key-value store
+3. Hashicorp Vault: For secrets management
+4. Reverse Proxy: For routing and load balancing (multiple options supported)
+5. NixOS: As the base operating system for all nodes
+6. Custom Management Software: For setup, configuration, and ongoing management
 
-- Still need to figure out passwords. I want to self host a password manager (i.e.
-  Bitwarden), but we run into a sort of chicken and egg situation because we need
-  passwords to setup certain services that require keys, however at the stage of
-  setting everything up, we don't have access to Bitwarden to see if passwords already
-  exist that we can use. Still need to figure this one out.
+## Custom Management Software
 
-## Implementation
+The custom management software will be written in Rust and will handle the following
+tasks:
 
-### Vision
+1. Initial setup and configuration
+2. Service discovery and deployment
+3. Integration with external services
+4. Ongoing maintenance
 
-The vision is to be able to run a situation like this:
+### Functionality
 
-```bash
-cargo run configure # input configuration such as api keys
-cargo run bootstrap # bootstrap the repo to be able to be run
-docker compose up # run all of the services
+#### 1. Initial Setup and Configuration
+
+The configuration process will prompt the user for various details about their setup.
+This interactive process will gather information such as:
+
+- VPN provider (e.g., Cloudflare Tunnel, WireGuard)
+- External DNS service (e.g., Cloudflare, AWS Route53)
+- Reverse proxy preference (e.g., Traefik, Nginx)
+- Authentication method (e.g., Authelia, Keycloak)
+
+The system will determine which options are available by scanning a predefined directory
+of supported integrations. Each integration will have its own module with a standard
+interface, allowing for easy addition of new supported services.
+
+Example directory structure for integrations:
+
+```txt
+src/
+  integrations/
+    vpn/
+      cloudflare_tunnel.rs
+      wireguard.rs
+    dns/
+      cloudflare.rs
+      route53.rs
+    reverse_proxy/
+      traefik.rs
+      nginx.rs
+    auth/
+      authelia.rs
+      keycloak.rs
 ```
 
-### Configure
+Each integration module will define:
 
-The first step of the manager process should be to configure the setup. This would
-include things like specifying API keys, and determining which services should be
-run where.
+- Configuration options required from the user
+- Methods for setting up and configuring the service
+- Methods for integrating with other components of the system
 
-A big feature of the configure stage is a step where the manager allows connection
-between multiple computers. This allows services to be distributed across multiple
-machines, but it's important that they can exchange information for things like port
-negotiation.
+After gathering all necessary information, the system will generate a configuration
+file to store these settings for future use. This file will not contain node-specific
+information, as the system is designed to allow dynamic addition and removal of nodes.
 
-The first piece of this is most likely just a walk of the directory to see what
-services are available, how they might fit together, etc. I am still trying to figure
-out how to specify services, since I dislike the model of having a `compose.yml`/`compose.in.yml`
-**and** a `service.json`/`service.in.json`. Additionally, it needs to support service
-specific templating/configuration, such as nginx site configurations, PiHole DNS
-lists, etc.
+Example configuration file (YAML):
 
-#### Connection
+```yaml
+homelab:
+  domain: home.example.com
 
-The connection step establishes an authority. This is the server that works as the
-determiner of things that need to be distributed, such as port negotiation.
+vpn:
+  provider: cloudflare_tunnel
+  config:
+    account_id: ${CF_ACCOUNT_ID}
+    tunnel_id: ${CF_TUNNEL_ID}
 
-A port needs to be established as the configuration service port. During this step,
-the authority listens on this port, then children will search the network for a
-machine that's listening on this port. These machines will establish a connection
-then proceed through the process simultaneously.
+dns:
+  provider: cloudflare
+  config:
+    api_token: ${CF_API_TOKEN}
+    zone_id: ${CF_ZONE_ID}
 
-The actual configuration will happen through the authority. The global settings
-will be done once then instance-specific settings will be prompted for each instance.
+reverse_proxy:
+  provider: traefik
 
-A part of this will be identifying the version that each instance has of everything
-(most likely some sort of hash or CRC or something of the current working directory)
-as well as some sort of enumeration of all of the services that are available for
-use later.
+auth:
+  provider: authelia
+  config:
+    admin_user: ${AUTH_ADMIN_USER}
+    admin_password: ${AUTH_ADMIN_PASSWORD}
+```
 
-#### Global Settings
+#### 2. Service Discovery and Deployment
 
-The homelab will need both public DNS and VPN setup, as well as some other global
-services, such as authentication, and password management. To begin with, I'm going
-to implement Cloudflare for the public DNS stuff and Cloudflare Tunnel for the VPN
-(it's not a VPN but functions like one). This will necessitate putting in API tokens
-and such.
+The management software will discover available services by walking the directory
+structure of the project. It will look for service definition files, which could
+be either Nomad jobspecs or custom definition files that generate Nomad jobspecs.
 
-In the future, this should support things like Wireguard, and potentially other
-DNS servers and such, but my use case is currently Cloudflare, so I won't worry
-about implementing that right now. However, I will make the interfaces to enable
-the easy implementation later.
+Example directory structure for services:
 
-These settings will influence the implementation of the system. For example, a reverse
-proxy will need to be configured to use an authentication service. Some services
-will need to be setup with usernames and passwords, which should be stored in a
-password manager. These settings can affect the entire system and influence how
-the system should be composed. For example, if we can choose between multiple VPN
-providers, only a single one should be included in the resulting Docker setup.
+```txt
+services/
+  nextcloud/
+    service.hcl
+  pihole/
+    service.hcl
+  plex/
+    service.hcl
+```
 
-#### Service Toggling
+The `service.hcl` files will contain all necessary information to deploy the service,
+including:
 
-The final step of configuration is enabling and disabling services. This involves
-prompting for each machine, which services should be run. Some services, such as
-`cloudflared` can be run on multiple machines, however some services should only
-run on a single machine.
+- Service name and description
+- Docker image and tag
+- Resource requirements
+- Environment variables
+- Volumes and persistent storage requirements
+- Network ports
+- Whether the service should be publicly accessible
 
-In this stage, we should also be able to specify services that are public. This
-will involve creating subdomains for the public services. Regardless of whether
-a service is public or private, it should point to the reverse proxy so that we
-get consistent functionality (i.e. authentication) across the board.
+Example `service.hcl`:
 
-#### Finalization
+```hcl
+service {
+  name = "nextcloud"
+  description = "Self-hosted file sync and share"
 
-Once we have all of the information we need, finalization can occur. This will include
-port negotiation, preparing cloud services, and distributing information across
-the network.
+  container {
+    image = "nextcloud:latest"
+    ports = [
+      {
+        internal = 80
+        external = 8080
+      }
+    ]
+  }
 
-I'm sure a piece of this will include setting up Docker secrets and distributing
-pertinent information to services that need it.
+  resources {
+    cpu = 1000
+    memory = 2048
+  }
 
-##### Cloudflare
+  volume {
+    name = "nextcloud-data"
+    path = "/var/www/html"
+  }
 
-This will involve setting up the Cloudflare tunnel as well as any Cloudflare DNS
-for public services. The process of setting Cloudflare tunnel as a private VPN can
-be found [in this guide](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/private-net/cloudflared/private-dns/).
+  env {
+    NEXTCLOUD_ADMIN_USER = "vault:secret/nextcloud#admin_user"
+    NEXTCLOUD_ADMIN_PASSWORD = "vault:secret/nextcloud#admin_password"
+  }
 
-If possible, the system should reuse as much existing configuration as possible.
-This will most likely be chosen in the [Global Setting step](#global-settings).
+  public_access = true
+}
+```
 
-### Bootstrap
+The management software will parse these files, generate the appropriate Nomad jobspecs,
+and deploy the services using the Nomad API.
 
-The bootstrap stage is the part where we get the file system ready for running.
-This will involve generating files with proper user IDs, generating service-specific
-configuration files, and generating the final Docker Compose files.
+#### 3. External Service Integration
 
-I don't want this step to require any input and I want it to be completely safe
-to run as many times as desired. It shouldn't need to connect to and change any
-other services, it should really just be generating files on the file system. As
-such, it should be a pretty quick and safe operation.
+Based on the user's choices during the configuration step, the management software
+will set up and configure the chosen external services. This includes:
 
-#### Templating
+- Setting up VPN for secure remote access
+- Configuring external DNS for public services
+- Setting up the chosen reverse proxy (e.g., Traefik)
 
-Templating is an important part of the process. This allows for files to be baked
-with things like user IDs, references to secrets, proper port numbers, etc.
+The software will use the integration modules mentioned earlier to perform these
+tasks.
 
-The previous format I followed went as follows:
+#### 4. Ongoing Maintenance
 
-1. Search for files that are not ignored that include `.in.` in their name
-2. Search for sections of these files that follow the `${part 1:part 2}` format
-3. Replace each matching section with valid data
-   - For example, if it said `${PORT:dozzle}`, it would keep a cache with all port
-     numbers. If it found it in the cache, it would return that. Otherwise, it would
-     add one to the current counter and test if it's an open port until it found
-     an open port, cache that, and return it.
-4. Save the resulting file without the `.in.` in the file name.
+While updates to core components (Nomad, Consul, Vault) are out of scope, the management
+software will provide tools for:
 
-This allowed for a flexible and powerful system, however I don't know if I love
-it. I'm still wondering if there's a better templating solution that I could use
-that offers more flexibility without feeling as flakey.
+- Updating running services
+- Adding new services
+- Removing services
+- Viewing logs and metrics
 
-#### Generating service configuration
+## User Flow
 
-An important step will be generating service-specific configurations. For example,
-nginx will need configuration files for each service to properly route it to the
-correct service. I'm sure other services will need something similar as well, but
-the only other I know of at the moment is PiHole, which needs files for DNS configurations.
+1. Initial Setup:
 
-Currently I have most of this process hard coded. In the manager project, I hard
-code where to save files, and I hard code the actual format that they should be
-saved in. I hate this system and want to have something much cleaner that allows
-for more flexibility. For example, maybe search for a file (or specify a directory
-that contains a file) that follows something similar to the templating format, then
-use that as a template for the files. Still undecided, need to figure this out.
+   - User installs Nomad, Consul, and Vault on their nodes
+   - User installs the Homelab Management System
 
-#### Generating Docker Compose
+2. Configuration:
 
-The final step will probably be generating the Docker Compose file(s). Getting most
-(or hopefully all) of the actual pertinent information should probably be able to
-be handled in the [templating step](#templating), so this will most likely just
-be generating the final `docker-compose.yml` file to include all of the relevant
-fragment files.
+   - User runs `homelab-manager configure`
+   - System prompts for VPN, DNS, reverse proxy, and auth choices
+   - System generates configuration file
 
-## Other considerations
+3. Service Deployment:
 
-I want to make extensive use of Docker features. Currently, I'm really only using
-Docker Compose, without using volumes, networks, Docker Swarm, or Docker secrets.
-I want to use these as much as possible to make this system as reliable and fully
-featured as possible.
+   - User adds service definition files to the `services/` directory
+   - User runs `homelab-manager deploy`
+   - System discovers services, generates jobspecs, and deploys to Nomad
+
+4. Ongoing Management:
+   - User can add/remove services by modifying the `services/` directory and running
+     `homelab-manager deploy`
+   - User can update services with `homelab-manager update <service-name>`
+   - User can view logs with `homelab-manager logs <service-name>`
+
+## Templating
+
+The system will use a templating engine (e.g., Handlebars) for generating configuration
+files and jobspecs. This allows for flexible configuration of services and integration
+with Vault for secret management.
+
+Example template for Traefik configuration:
+
+```handlebars
+[entryPoints] [entryPoints.web] address = ":80" [entryPoints.websecure] address
+= ":443" [providers.consulCatalog] prefix = "traefik" exposedByDefault = false
+[certificatesResolvers.myresolver.acme] email = "{{email}}" storage =
+"acme.json" [certificatesResolvers.myresolver.acme.httpChallenge] entryPoint =
+"web"
+
+{{#if auth.enabled}}
+  [middleware.auth] [middleware.auth.forwardAuth] address = "http://{{auth.service}}:{{auth.port}}/api/verify?rd=https://{{auth.service}}.{{domain}}"
+{{/if}}
+```
+
+## Conclusion
+
+This plan outlines a detailed approach to building a flexible and user-friendly
+homelab management system. By focusing on service discovery, external integrations,
+and providing a clear user flow, we can create a system that is easy to set up,
+maintain, and expand over time. The system's modular design allows for easy addition
+of new integrations and services in the future.
