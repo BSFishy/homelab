@@ -18,6 +18,7 @@
               pkgs.docker
               pkgs.docker-compose
               pkgs.cargo
+              pkgs.rustc
               pkgs.rust-analyzer
             ];
           };
