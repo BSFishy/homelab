@@ -1,4 +1,4 @@
-use std::{env, process::Command, str::FromStr};
+use std::{env, fs::read_to_string, path::PathBuf, process::Command, str::FromStr};
 
 use regex::Regex;
 use semver::Version;
@@ -58,5 +58,20 @@ impl Nomad {
         log::debug!("Valid Nomad version detected");
 
         Ok(())
+    }
+}
+
+#[derive(Debug)]
+pub struct Job {
+    path: PathBuf,
+}
+
+impl Job {
+    pub fn new(path: impl Into<PathBuf>) -> Job {
+        Job { path: path.into() }
+    }
+
+    pub fn contents(&self) -> Result<String, Box<dyn std::error::Error>> {
+        Ok(read_to_string(&self.path)?)
     }
 }
