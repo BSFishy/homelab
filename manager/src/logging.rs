@@ -59,12 +59,13 @@ impl Log for Logger {
             };
 
             let message = format!("{}", record.args());
-            let lines = message.split('\n');
-            for line in lines {
-                self.term
-                    .write_line(&format!("{:>6} {}", style.apply_to(level), line))
-                    .unwrap();
-            }
+            let message = message
+                .split('\n')
+                .map(|line| format!("{:>6} {}", style.apply_to(level), line))
+                .collect::<Vec<_>>()
+                .join("\n");
+
+            self.term.write_line(&message).unwrap();
         }
     }
 
