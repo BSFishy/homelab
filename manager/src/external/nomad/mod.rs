@@ -1,5 +1,6 @@
 use std::{env, fs::read_to_string, path::PathBuf, process::Command, str::FromStr};
 
+use anyhow::{anyhow, bail, Context, Result};
 use regex::Regex;
 use semver::Version;
 
@@ -26,9 +27,15 @@ impl Nomad {
 
 // MARK: Version related functions
 impl Nomad {
-    pub fn version(&self) -> Result<Version, Box<dyn std::error::Error>> {
-        let output = self.command().arg("-version").output()?;
-        let output = String::from_utf8(output.stdout)?;
+    pub fn version(&self) -> Result<Version> {
+        let output = self
+            .command()
+            .arg("-version")
+            .output()
+            .context("Failed to execute Nomad")?;
+
+        let output =
+            String::from_utf8(output.stdout).context("Failed to parse Nomad output as UTF-8")?;
         let output = output.trim();
 
         log::trace!("Nomad version output: {output}");
@@ -36,18 +43,20 @@ impl Nomad {
         // Regex pulled from https://semver.org/
         let re = Regex::new(
             r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?",
-        )?;
-        let version_match = re.find(output).ok_or("Failed to find version")?;
+        ).context("Failed to parse version regular expression")?;
+        let version_match = re
+            .find(output)
+            .ok_or(anyhow!("Failed to find version in command output"))?;
         let version = version_match.as_str();
         log::debug!("Found Nomad version: {version}");
 
         Ok(Version::from_str(version)?)
     }
 
-    pub fn validate_version(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let version = self.version()?;
+    pub fn validate_version(&self) -> Result<()> {
+        let version = self.version().context("Failed to get Nomad version")?;
         if version.major != 1 {
-            return Err("Unsupported Nomad version".into());
+            bail!("Unsupported Nomad version");
         }
 
         if version.minor < 7 || (version.minor == 7 && version.patch < 7) {
@@ -71,7 +80,7 @@ impl Job {
         Job { path: path.into() }
     }
 
-    pub fn contents(&self) -> Result<String, Box<dyn std::error::Error>> {
-        Ok(read_to_string(&self.path)?)
+    pub fn contents(&self) -> Result<String> {
+        Ok(read_to_string(&self.path).context("Failed to read jobspec")?)
     }
 }

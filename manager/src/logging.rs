@@ -1,9 +1,10 @@
 use std::env;
 
+use anyhow::{anyhow, Context, Result};
 use console::{Style, Term};
 use log::{Level, LevelFilter, Log};
 
-pub fn setup(log_level: usize) -> Result<(), Box<dyn std::error::Error>> {
+pub fn setup(log_level: usize) -> Result<()> {
     let log_level = env::var("LOG_LEVEL")
         .map(|level| level.to_lowercase())
         .map_or(
@@ -13,7 +14,7 @@ pub fn setup(log_level: usize) -> Result<(), Box<dyn std::error::Error>> {
                 3 => Ok(Level::Info),
                 4 => Ok(Level::Debug),
                 5 => Ok(Level::Trace),
-                _ => Err("Invalid log level".to_string()),
+                _ => Err(anyhow!("Invalid log level")),
             },
             |level| match level.as_str() {
                 "trace" => Ok(Level::Trace),
@@ -21,7 +22,7 @@ pub fn setup(log_level: usize) -> Result<(), Box<dyn std::error::Error>> {
                 "warn" | "warning" => Ok(Level::Warn),
                 "error" => Ok(Level::Error),
                 "info" => Ok(Level::Info),
-                _ => Err(format!("Unknown log level {level}")),
+                _ => Err(anyhow!("Unknown log level {level}")),
             },
         )?;
 
@@ -30,7 +31,9 @@ pub fn setup(log_level: usize) -> Result<(), Box<dyn std::error::Error>> {
         term: Term::stderr(),
     };
 
-    log::set_boxed_logger(Box::new(logger)).map(|()| log::set_max_level(LevelFilter::Trace))?;
+    log::set_boxed_logger(Box::new(logger))
+        .map(|()| log::set_max_level(LevelFilter::Trace))
+        .context("Failed to set logger")?;
 
     Ok(())
 }
