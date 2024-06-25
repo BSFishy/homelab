@@ -111,6 +111,9 @@ impl Nomad {
         let output = String::from_utf8_lossy(&output.stdout);
         log::trace!("{output}");
 
+        // TODO: make this say the job name
+        log::debug!("Successfully queued job");
+
         Ok(())
     }
 }
