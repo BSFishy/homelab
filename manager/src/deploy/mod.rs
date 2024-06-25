@@ -12,11 +12,12 @@ pub fn deploy(_args: &DeployArgs) -> Result<()> {
         .context("Failed to validate Nomad version")?;
 
     let jobs: Result<Vec<_>, _> = glob::glob("**/service.hcl")?.collect();
-    let jobs: Vec<_> = jobs?.iter().map(|path| Job::new(path)).collect();
+    let jobs: Result<Vec<_>, _> = jobs?.iter().map(|path| Job::from_file(path)).collect();
 
-    for job in jobs {
-        log::info!("Job: {}", job.contents()?);
+    for job in jobs? {
+        log::info!("Deploying job");
+        nomad.run(job)?;
     }
 
-    todo!()
+    Ok(())
 }

@@ -1,4 +1,12 @@
-use std::{env, fs::read_to_string, path::PathBuf, process::Command, str::FromStr};
+use std::{
+    env,
+    fs::File,
+    io::{self, Write},
+    path::{Path, PathBuf},
+    process::{Command, Stdio},
+    str::FromStr,
+    thread,
+};
 
 use anyhow::{anyhow, bail, Context, Result};
 use regex::Regex;
@@ -25,7 +33,7 @@ impl Nomad {
     }
 }
 
-// MARK: Version related functions
+// MARK: version related functions
 impl Nomad {
     pub fn version(&self) -> Result<Version> {
         let output = self
@@ -71,17 +79,59 @@ impl Nomad {
     }
 }
 
+// MARK: job related functions
+impl Nomad {
+    pub fn run(&self, job: Job) -> Result<()> {
+        let mut command = self
+            .command()
+            .args(["job", "run", "-"])
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .spawn()
+            .context("Failed to spawn command")?;
+
+        let mut stdin = command
+            .stdin
+            .take()
+            .ok_or(anyhow!("Failed to get stdin of child process"))?;
+
+        let join = thread::spawn(move || {
+            job.pipe(&mut stdin)
+                .context("Failed to pipe jobspec into child process")
+        });
+
+        let output = command
+            .wait_with_output()
+            .context("Failed to wait on child")?;
+
+        join.join()
+            .map_err(|_| anyhow!("Stdin thread panicked"))?
+            .context("Failed to join the stdin pipe thread")?;
+
+        let output = String::from_utf8_lossy(&output.stdout);
+        log::trace!("{output}");
+
+        Ok(())
+    }
+}
+
 #[derive(Debug)]
 pub struct Job {
     path: PathBuf,
 }
 
 impl Job {
-    pub fn new(path: impl Into<PathBuf>) -> Job {
-        Job { path: path.into() }
+    pub fn from_file(path: impl AsRef<Path>) -> Result<Job> {
+        Ok(Job {
+            path: path.as_ref().to_path_buf(),
+        })
     }
 
-    pub fn contents(&self) -> Result<String> {
-        Ok(read_to_string(&self.path).context("Failed to read jobspec")?)
+    pub fn pipe(&self, writer: &mut impl Write) -> Result<()> {
+        let mut file = File::open(&self.path).context("Failed to read jobspec file")?;
+
+        io::copy(&mut file, writer).context("Failed to copy from jobspec file")?;
+
+        Ok(())
     }
 }
