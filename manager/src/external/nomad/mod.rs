@@ -26,7 +26,7 @@ impl Nomad {
     }
 }
 
-// Version related functions
+// MARK: Version related functions
 impl Nomad {
     pub fn version(&self) -> Result<Version, Box<dyn std::error::Error>> {
         let output = self.command().arg("-version").output()?;
