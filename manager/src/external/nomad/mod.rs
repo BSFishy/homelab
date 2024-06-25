@@ -44,13 +44,14 @@ impl Nomad {
         let re = Regex::new(
             r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?",
         ).context("Failed to parse version regular expression")?;
+
         let version_match = re
             .find(output)
             .ok_or(anyhow!("Failed to find version in command output"))?;
         let version = version_match.as_str();
         log::debug!("Found Nomad version: {version}");
 
-        Ok(Version::from_str(version)?)
+        Ok(Version::from_str(version).context("Failed to parse Nomad version as semver")?)
     }
 
     pub fn validate_version(&self) -> Result<()> {
