@@ -8,19 +8,17 @@ pub struct Nomad {
     command: String,
 }
 
-impl Default for Nomad {
-    fn default() -> Self {
+impl Nomad {
+    pub fn new() -> Nomad {
         let command = env::var("NOMAD")
             .inspect(|_command| log::trace!("Found Nomad environment variable for command"))
             .unwrap_or("nomad".to_string());
 
         log::debug!("Using Nomad command: {command}");
 
-        Self { command }
+        Nomad { command }
     }
-}
 
-impl Nomad {
     fn command(&self) -> Command {
         Command::new(&self.command)
     }
