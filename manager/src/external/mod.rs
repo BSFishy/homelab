@@ -1,4 +1,4 @@
-mod cloudflare;
-mod consul;
-mod nomad;
-mod vault;
+pub mod cloudflare;
+pub mod consul;
+pub mod nomad;
+pub mod vault;

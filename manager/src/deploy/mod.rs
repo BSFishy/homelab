@@ -1,7 +1,8 @@
-use crate::args::DeployArgs;
+use crate::{args::DeployArgs, external::nomad::Nomad};
 
 pub fn deploy(_args: &DeployArgs) -> Result<(), Box<dyn std::error::Error>> {
-    log::info!("Deploy gello world!");
+    let nomad = Nomad::default();
+    nomad.validate_version()?;
 
     todo!()
 }
