@@ -1,6 +1,7 @@
+use std::env;
+
 use console::{Style, Term};
 use log::{Level, LevelFilter, Log};
-use std::env;
 
 pub fn setup(log_level: usize) -> Result<(), Box<dyn std::error::Error>> {
     let log_level = env::var("LOG_LEVEL")
