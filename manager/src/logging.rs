@@ -58,9 +58,13 @@ impl Log for Logger {
                 Level::Trace => style.magenta(),
             };
 
-            self.term
-                .write_line(&format!("{:>6} {}", style.apply_to(level), record.args()))
-                .unwrap();
+            let message = format!("{}", record.args());
+            let lines = message.split('\n');
+            for line in lines {
+                self.term
+                    .write_line(&format!("{:>6} {}", style.apply_to(level), line))
+                    .unwrap();
+            }
         }
     }
 

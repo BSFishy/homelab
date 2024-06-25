@@ -15,8 +15,10 @@
         devShells = {
           default = pkgs.mkShell {
             buildInputs = [
+              pkgs.consul
+              pkgs.nomad
+              pkgs.vault
               pkgs.docker
-              pkgs.docker-compose
               pkgs.cargo
               pkgs.rustc
               pkgs.rust-analyzer
