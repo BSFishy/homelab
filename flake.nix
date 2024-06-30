@@ -15,10 +15,10 @@
         devShells = {
           default = pkgs.mkShell {
             buildInputs = [
-              pkgs.ansible
-              pkgs.kubernetes-helm
               pkgs.docker
-              pkgs.k3s
+              pkgs.cargo
+              pkgs.rustc
+              pkgs.rust-analyzer
             ];
           };
         };
