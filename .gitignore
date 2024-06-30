@@ -1,15 +1,6 @@
 # Ignore direnv cache
 /.direnv
 
-# Ignore Rust output
-/target
-
-# Ignore generated docker compose file
-/docker-compose.yml
-
-# Ignore generated information file
-/homelab.json
-
 # Ignore temporary and system files
 *.tmp
 *.swp
