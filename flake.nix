@@ -13,7 +13,13 @@
       in
       {
         devShells = {
-          default = pkgs.mkShell { buildInputs = [ ]; };
+          default = pkgs.mkShell {
+            buildInputs = [
+              pkgs.k3s
+              pkgs.pulumi
+              pkgs.nodejs_22
+            ];
+          };
         };
       }
     );
