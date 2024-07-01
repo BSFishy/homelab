@@ -1,3 +1,5 @@
+server:
+  port: 8080
 theme:
   background-color: 0 0 16
   primary-color: 183 33 40

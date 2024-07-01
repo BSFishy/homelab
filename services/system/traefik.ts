@@ -17,7 +17,17 @@ const traefik = new k8s.helm.v3.Chart("traefik", {
       // Type must be ClusterIP instead of LoadBalancer on k3s
       type: "ClusterIP",
     },
-    ingressRoute: { dashboard: { entryPoints: ["web", "websecure"] } },
+    ingressRoute: {
+      dashboard: {
+        // TODO: make custom hostname work with external-dns
+        annotations: {
+          "external-dns.alpha.kubernetes.io/hostname": "traefik.home",
+        },
+        matchRule:
+          "Host(`traefik.home`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api`))",
+        entryPoints: ["web", "websecure"],
+      },
+    },
   },
 });
 
