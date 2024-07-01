@@ -1,6 +1,0 @@
-{
-  "name": "grafana",
-  "enabled": true,
-  "domain": "grafana.local",
-  "ports": [{ "value": "${PORT:grafana}", "type": "web" }]
-}

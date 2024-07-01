@@ -1,14 +1,12 @@
 # Ignore direnv cache
 /.direnv
 
-# Ignore Rust output
-/target
+# Ignore Pulumi artifacts
+/bin
+/node_modules
 
-# Ignore generated docker compose file
-/docker-compose.yml
-
-# Ignore generated information file
-/homelab.json
+# Ignore Pulumi stacks
+/Pulumi.*.yaml
 
 # Ignore temporary and system files
 *.tmp

@@ -1,6 +1,0 @@
-{
-  "name": "homeassistant",
-  "enabled": true,
-  "domain": "homeassistant.local",
-  "ports": [{ "value": "8123", "type": "web" }]
-}
