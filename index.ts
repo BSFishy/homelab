@@ -1,16 +1,23 @@
+import * as pulumi from "@pulumi/pulumi";
 import * as k8s from "@pulumi/kubernetes";
 
-const appName = "nginx";
-const appLabels = { app: appName };
-const deployment = new k8s.apps.v1.Deployment(appName, {
-  spec: {
-    selector: { matchLabels: appLabels },
-    replicas: 1,
-    template: {
-      metadata: { labels: appLabels },
-      spec: { containers: [{ name: "nginx", image: "nginx" }] },
+const traefik = new k8s.helm.v3.Chart("traefik", {
+  chart: "traefik",
+  fetchOpts: {
+    repo: "https://traefik.github.io/charts",
+  },
+  values: {
+    service: {
+      // Type must be ClusterIP instead of LoadBalancer on k3s
+      type: "ClusterIP",
     },
+    ingressRoute: { dashboard: { entryPoints: ["web", "websecure"] } },
   },
 });
 
-export const name = deployment.metadata.name;
+export let clusterIp = traefik.getResourceProperty(
+  "v1/Service",
+  "default",
+  "traefik",
+  "spec",
+).clusterIP;
