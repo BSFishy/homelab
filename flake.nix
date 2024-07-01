@@ -17,6 +17,7 @@
             buildInputs = [
               pkgs.k3s
               pkgs.pulumi
+              pkgs.pulumiPackages.pulumi-language-nodejs
               pkgs.nodejs_22
             ];
           };
