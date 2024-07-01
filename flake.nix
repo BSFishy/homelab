@@ -13,14 +13,7 @@
       in
       {
         devShells = {
-          default = pkgs.mkShell {
-            buildInputs = [
-              pkgs.docker
-              pkgs.cargo
-              pkgs.rustc
-              pkgs.rust-analyzer
-            ];
-          };
+          default = pkgs.mkShell { buildInputs = [ ]; };
         };
       }
     );
