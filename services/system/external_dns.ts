@@ -1,6 +1,5 @@
 import * as k8s from "@pulumi/kubernetes";
 import { chart as piholeChart } from "./pihole";
-import { chart as traefikChart } from "./traefik";
 
 const namespace = new k8s.core.v1.Namespace("external-dns", {
   metadata: {

@@ -14,9 +14,6 @@ export const chart = new k8s.helm.v3.Chart("pihole", {
   },
   values: {
     adminPassword: "abc",
-    dnsHostPort: {
-      enabled: true,
-    },
     serviceWeb: {
       type: "LoadBalancer",
     },
