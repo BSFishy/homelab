@@ -17,12 +17,14 @@ const pihole = new k8s.helm.v3.Chart("pihole", {
     dnsHostPort: {
       enabled: true,
     },
-    // TODO: use load balancer
     serviceWeb: {
-      type: "ClusterIP",
+      type: "LoadBalancer",
     },
     serviceDns: {
-      type: "ClusterIP",
+      type: "LoadBalancer",
+    },
+    serviceDhcp: {
+      enabled: false,
     },
     ingress: {
       enabled: true,
@@ -44,17 +46,19 @@ const pihole = new k8s.helm.v3.Chart("pihole", {
 });
 
 export let output = {
-  webIp: pihole.getResourceProperty(
-    "v1/Service",
-    "pihole",
-    "pihole-web",
-    "spec",
-  ).clusterIP,
-  dnsIp: pihole.getResourceProperty(
-    "v1/Service",
-    "pihole",
-    "pihole-dns-udp",
-    "spec",
-  ).clusterIP,
+  webIps: pihole.ready.apply(() =>
+    pihole
+      .getResourceProperty("v1/Service", "pihole", "pihole-web", "status")
+      .apply((status) =>
+        status.loadBalancer.ingress.map((ingress) => ingress.ip),
+      ),
+  ),
+  dnsIps: pihole.ready.apply(() =>
+    pihole
+      .getResourceProperty("v1/Service", "pihole", "pihole-dns-udp", "status")
+      .apply((status) =>
+        status.loadBalancer.ingress.map((ingress) => ingress.ip),
+      ),
+  ),
   namespace: namespace.metadata.name,
 };

@@ -95,7 +95,7 @@ const service = new k8s.core.v1.Service("glance", {
         targetPort: 8080,
       },
     ],
-    type: "ClusterIP",
+    type: "LoadBalancer",
   },
 });
 
@@ -135,4 +135,7 @@ export const output = {
   serviceName: service.metadata.name,
   namespace: namespace.metadata.name,
   ingressName: ingress.metadata.name,
+  ips: service.status.loadBalancer.ingress.apply((ingress) =>
+    ingress.map((ingress) => ingress.ip),
+  ),
 };

@@ -15,24 +15,31 @@ const traefik = new k8s.helm.v3.Chart("traefik", {
   values: {
     service: {
       // Type must be ClusterIP instead of LoadBalancer on k3s
-      type: "ClusterIP",
+      type: "LoadBalancer",
     },
     ingressRoute: {
       dashboard: {
-        // TODO: make custom hostname work with external-dns
-        annotations: {
-          "external-dns.alpha.kubernetes.io/hostname": "traefik.home",
-        },
-        matchRule:
-          "Host(`traefik.home`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api`))",
+        matchRule: "PathPrefix(`/dashboard`) || PathPrefix(`/api`)",
         entryPoints: ["web", "websecure"],
+      },
+    },
+    providers: {
+      kubernetesIngress: {
+        publishedService: {
+          enabled: true,
+        },
       },
     },
   },
 });
 
 export let output = {
-  ip: traefik.getResourceProperty("v1/Service", "traefik", "traefik", "spec")
-    .clusterIP,
+  ips: traefik.ready.apply(() =>
+    traefik
+      .getResourceProperty("v1/Service", "traefik", "traefik", "status")
+      .apply((status) =>
+        status.loadBalancer.ingress.map((ingress) => ingress.ip),
+      ),
+  ),
   namespace: namespace.metadata.name,
 };

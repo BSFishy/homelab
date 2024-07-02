@@ -18,6 +18,7 @@
               pkgs.k3s
               pkgs.pulumi-bin
               pkgs.pulumi-esc
+              pkgs.crd2pulumi
               pkgs.pulumiPackages.pulumi-language-nodejs
               pkgs.nodejs_22
             ];
