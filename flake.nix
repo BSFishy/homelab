@@ -16,7 +16,8 @@
           default = pkgs.mkShell {
             buildInputs = [
               pkgs.k3s
-              pkgs.pulumi
+              pkgs.pulumi-bin
+              pkgs.pulumi-esc
               pkgs.pulumiPackages.pulumi-language-nodejs
               pkgs.nodejs_22
             ];
