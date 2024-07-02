@@ -6,7 +6,7 @@ const namespace = new k8s.core.v1.Namespace("pihole", {
   },
 });
 
-const pihole = new k8s.helm.v3.Chart("pihole", {
+export const chart = new k8s.helm.v3.Chart("pihole", {
   chart: "pihole",
   namespace: namespace.metadata.name,
   fetchOpts: {
@@ -46,15 +46,15 @@ const pihole = new k8s.helm.v3.Chart("pihole", {
 });
 
 export let output = {
-  webIps: pihole.ready.apply(() =>
-    pihole
+  webIps: chart.ready.apply(() =>
+    chart
       .getResourceProperty("v1/Service", "pihole", "pihole-web", "status")
       .apply((status) =>
         status.loadBalancer.ingress.map((ingress) => ingress.ip),
       ),
   ),
-  dnsIps: pihole.ready.apply(() =>
-    pihole
+  dnsIps: chart.ready.apply(() =>
+    chart
       .getResourceProperty("v1/Service", "pihole", "pihole-dns-udp", "status")
       .apply((status) =>
         status.loadBalancer.ingress.map((ingress) => ingress.ip),

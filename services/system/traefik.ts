@@ -6,7 +6,7 @@ const namespace = new k8s.core.v1.Namespace("traefik", {
   },
 });
 
-const traefik = new k8s.helm.v3.Chart("traefik", {
+const chart = new k8s.helm.v3.Chart("traefik", {
   chart: "traefik",
   namespace: namespace.metadata.name,
   fetchOpts: {
@@ -34,8 +34,8 @@ const traefik = new k8s.helm.v3.Chart("traefik", {
 });
 
 export let output = {
-  ips: traefik.ready.apply(() =>
-    traefik
+  ips: chart.ready.apply(() =>
+    chart
       .getResourceProperty("v1/Service", "traefik", "traefik", "status")
       .apply((status) =>
         status.loadBalancer.ingress.map((ingress) => ingress.ip),
