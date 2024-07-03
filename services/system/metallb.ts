@@ -1,7 +1,7 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as k8s from "@pulumi/kubernetes";
 
-export class Metallb extends pulumi.ComponentResource {
+export class MetalLB extends pulumi.ComponentResource {
   public readonly namespace: k8s.core.v1.Namespace;
   public readonly chart: k8s.helm.v3.Chart;
   public readonly addressPool: k8s.apiextensions.CustomResource;
