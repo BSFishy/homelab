@@ -9,7 +9,7 @@ export class PiHole extends pulumi.ComponentResource {
     super("homelab:system:pihole", name, {}, opts);
 
     this.namespace = new k8s.core.v1.Namespace(
-      "pihole",
+      "pihole-namespace",
       {
         metadata: {
           name: "pihole",
@@ -19,7 +19,7 @@ export class PiHole extends pulumi.ComponentResource {
     );
 
     this.chart = new k8s.helm.v3.Chart(
-      "pihole",
+      "pihole-chart",
       {
         chart: "pihole",
         namespace: this.namespace.metadata.name,

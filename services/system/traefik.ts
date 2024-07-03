@@ -9,7 +9,7 @@ export class Traefik extends pulumi.ComponentResource {
     super("homelab:system:traefik", name, {}, opts);
 
     this.namespace = new k8s.core.v1.Namespace(
-      "traefik",
+      "traefik-namespace",
       {
         metadata: {
           name: "traefik",
@@ -19,7 +19,7 @@ export class Traefik extends pulumi.ComponentResource {
     );
 
     this.chart = new k8s.helm.v3.Chart(
-      "traefik",
+      "traefik-chart",
       {
         chart: "traefik",
         namespace: this.namespace.metadata.name,

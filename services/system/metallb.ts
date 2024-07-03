@@ -11,7 +11,7 @@ export class MetalLB extends pulumi.ComponentResource {
     super("homelab:system:metallb", name, {}, opts);
 
     this.namespace = new k8s.core.v1.Namespace(
-      "metallb",
+      "metallb-namespace",
       {
         metadata: {
           name: "metallb",
@@ -21,7 +21,7 @@ export class MetalLB extends pulumi.ComponentResource {
     );
 
     this.chart = new k8s.helm.v3.Chart(
-      "metallb",
+      "metallb-chart",
       {
         chart: "metallb",
         namespace: this.namespace.metadata.name,
@@ -33,7 +33,7 @@ export class MetalLB extends pulumi.ComponentResource {
     );
 
     this.addressPool = new k8s.apiextensions.CustomResource(
-      "metallb",
+      "metallb-address-pool",
       {
         apiVersion: "metallb.io/v1beta1",
         kind: "IPAddressPool",
@@ -49,7 +49,7 @@ export class MetalLB extends pulumi.ComponentResource {
     );
 
     this.l2Advertisement = new k8s.apiextensions.CustomResource(
-      "metallb",
+      "metallb-l2-advertisement",
       {
         apiVersion: "metallb.io/v1beta1",
         kind: "L2Advertisement",

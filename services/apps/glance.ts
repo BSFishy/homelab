@@ -15,7 +15,7 @@ export class Glance extends pulumi.ComponentResource {
 
     // Define namespace
     this.namespace = new k8s.core.v1.Namespace(
-      "glance",
+      "glance-namespace",
       {
         metadata: { name: "glance" },
       },
@@ -28,7 +28,7 @@ export class Glance extends pulumi.ComponentResource {
 
     // Define ConfigMap for glance.yml
     this.configMap = new k8s.core.v1.ConfigMap(
-      "glance",
+      "glance-config-map",
       {
         metadata: {
           name: "glance",
@@ -44,7 +44,7 @@ export class Glance extends pulumi.ComponentResource {
     // Define the Glance Deployment
     const appLabels = { app: "glance" };
     this.deployment = new k8s.apps.v1.Deployment(
-      "glance",
+      "glance-deployment",
       {
         metadata: { namespace: this.namespace.metadata.name },
         spec: {
@@ -106,7 +106,7 @@ export class Glance extends pulumi.ComponentResource {
 
     // Define the Glance Service
     this.service = new k8s.core.v1.Service(
-      "glance",
+      "glance-service",
       {
         metadata: {
           namespace: this.namespace.metadata.name,
@@ -128,7 +128,7 @@ export class Glance extends pulumi.ComponentResource {
 
     // Define the Glance Ingress
     this.ingress = new k8s.networking.v1.Ingress(
-      "glance",
+      "glance-ingress",
       {
         metadata: {
           namespace: this.namespace.metadata.name,

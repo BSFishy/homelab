@@ -25,7 +25,7 @@ export class System extends pulumi.ComponentResource {
       dependsOn: [this.metallb],
     });
 
-    this.external_dns = new ExternalDns("external_dns", {
+    this.external_dns = new ExternalDns("external-dns", {
       parent: this,
       dependsOn: [this.metallb, this.pihole],
     });

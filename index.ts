@@ -10,21 +10,26 @@ export const metallbAddresses =
 const piholeChart = system.pihole.chart;
 export const piholeWebIps = piholeChart.ready.apply(() =>
   piholeChart
-    .getResourceProperty("v1/Service", "pihole", "pihole-web", "status")
+    .getResourceProperty("v1/Service", "pihole", "pihole-chart-web", "status")
     .apply((status) =>
       status.loadBalancer.ingress.map((ingress) => ingress.ip),
     ),
 );
 export const piholeDnsIps = piholeChart.ready.apply(() =>
   piholeChart
-    .getResourceProperty("v1/Service", "pihole", "pihole-dns-udp", "status")
+    .getResourceProperty(
+      "v1/Service",
+      "pihole",
+      "pihole-chart-dns-udp",
+      "status",
+    )
     .apply((status) =>
       status.loadBalancer.ingress.map((ingress) => ingress.ip),
     ),
 );
 
 export const traefikIps = system.traefik.chart
-  .getResourceProperty("v1/Service", "traefik", "traefik", "status")
+  .getResourceProperty("v1/Service", "traefik", "traefik-chart", "status")
   .apply((status) => status.loadBalancer.ingress.map((ingress) => ingress.ip));
 
 export const glanceIps =
