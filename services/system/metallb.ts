@@ -1,5 +1,4 @@
 import * as k8s from "@pulumi/kubernetes";
-import { metallb } from "../crds";
 
 const namespace = new k8s.core.v1.Namespace("metallb", {
   metadata: {
@@ -15,9 +14,11 @@ const chart = new k8s.helm.v3.Chart("metallb", {
   },
 });
 
-const addressPool = new metallb.v1beta1.IPAddressPool(
+const addressPool = new k8s.apiextensions.CustomResource(
   "metallb",
   {
+    apiVersion: "metallb.io/v1beta1",
+    kind: "IPAddressPool",
     metadata: {
       name: "metallb",
       namespace: namespace.metadata.name,
@@ -29,9 +30,11 @@ const addressPool = new metallb.v1beta1.IPAddressPool(
   { dependsOn: chart.ready },
 );
 
-const l2Advertisement = new metallb.v1beta1.L2Advertisement(
+const l2Advertisement = new k8s.apiextensions.CustomResource(
   "metallb",
   {
+    apiVersion: "metallb.io/v1beta1",
+    kind: "L2Advertisement",
     metadata: {
       name: "metallb",
       namespace: namespace.metadata.name,
@@ -42,8 +45,5 @@ const l2Advertisement = new metallb.v1beta1.L2Advertisement(
 
 // TODO: do something with the output
 export let output = {
-  addresses: addressPool.spec.addresses.apply((addresses) =>
-    addresses.join(", "),
-  ),
-  status: l2Advertisement.status,
+  addresses: addressPool.getInputs().spec.addresses.join(", "),
 };
