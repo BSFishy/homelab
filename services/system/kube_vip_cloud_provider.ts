@@ -9,6 +9,8 @@ export class KubeVipCloudProvider extends pulumi.ComponentResource {
   public readonly deployment: k8s.apps.v1.Deployment;
   public readonly configMap: k8s.core.v1.ConfigMap;
 
+  public readonly ready: pulumi.Output<Array<pulumi.Resource>>;
+
   constructor(name: string, opts?: pulumi.ComponentResourceOptions) {
     super("homelab:system:kube-vip-cloud-provider", name, {}, opts);
 
@@ -186,6 +188,17 @@ export class KubeVipCloudProvider extends pulumi.ComponentResource {
       },
       { parent: this },
     );
+
+    this.ready = pulumi
+      .all([
+        this.namespace,
+        this.serviceAccount,
+        this.clusterRole,
+        this.clusterRoleBinding,
+        this.deployment,
+        this.configMap,
+      ])
+      .apply((ready) => ready.flat());
 
     this.registerOutputs();
   }

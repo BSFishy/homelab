@@ -8,6 +8,8 @@ export class KubeVip extends pulumi.ComponentResource {
   public readonly clusterRoleBinding: k8s.rbac.v1.ClusterRoleBinding;
   public readonly daemonSet: k8s.apps.v1.DaemonSet;
 
+  public readonly ready: pulumi.Output<Array<pulumi.Resource>>;
+
   constructor(name: string, opts?: pulumi.ComponentResourceOptions) {
     super("homelab:system:kube-vip", name, {}, opts);
 
@@ -185,6 +187,16 @@ export class KubeVip extends pulumi.ComponentResource {
       },
       { parent: this, dependsOn: [this.clusterRoleBinding] },
     );
+
+    this.ready = pulumi
+      .all([
+        this.namespace,
+        this.serviceAccount,
+        this.clusterRole,
+        this.clusterRoleBinding,
+        this.daemonSet,
+      ])
+      .apply((ready) => ready.flat());
 
     this.registerOutputs();
   }

@@ -7,6 +7,8 @@ export class MetalLB extends pulumi.ComponentResource {
   public readonly addressPool: k8s.apiextensions.CustomResource;
   public readonly l2Advertisement: k8s.apiextensions.CustomResource;
 
+  public readonly ready: pulumi.Output<Array<pulumi.Resource>>;
+
   constructor(name: string, opts?: pulumi.ComponentResourceOptions) {
     super("homelab:system:metallb", name, {}, opts);
 
@@ -60,6 +62,15 @@ export class MetalLB extends pulumi.ComponentResource {
       },
       { parent: this, dependsOn: this.chart.ready },
     );
+
+    this.ready = pulumi
+      .all([
+        this.namespace,
+        this.chart.ready,
+        this.addressPool,
+        this.l2Advertisement,
+      ])
+      .apply((ready) => ready.flat());
 
     this.registerOutputs();
   }

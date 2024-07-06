@@ -26,20 +26,24 @@ export class System extends pulumi.ComponentResource {
 
     this.traefik = new Traefik("traefik", {
       parent: this,
-      dependsOn: [this.kube_vip, this.kube_vip_cloud_provider],
+      dependsOn: pulumi
+        .all([this.kube_vip.ready, this.kube_vip_cloud_provider.ready])
+        .apply((ready) => ready.flat()),
     });
 
     this.pihole = new PiHole("pihole", {
       parent: this,
-      dependsOn: [this.kube_vip, this.kube_vip_cloud_provider],
+      dependsOn: pulumi
+        .all([this.kube_vip.ready, this.kube_vip_cloud_provider.ready])
+        .apply((ready) => ready.flat()),
     });
 
     this.external_dns = new ExternalDns("external-dns", {
       parent: this,
       dependsOn: pulumi
         .all([
-          this.kube_vip,
-          this.kube_vip_cloud_provider,
+          this.kube_vip.ready,
+          this.kube_vip_cloud_provider.ready,
           this.traefik.ready,
           this.pihole.ready,
         ])
@@ -47,7 +51,13 @@ export class System extends pulumi.ComponentResource {
     });
 
     this.ready = pulumi
-      .all([this.traefik.ready, this.pihole.ready])
+      .all([
+        this.kube_vip.ready,
+        this.kube_vip_cloud_provider.ready,
+        this.traefik.ready,
+        this.pihole.ready,
+        this.external_dns.ready,
+      ])
       .apply((ready) => ready.flat());
 
     this.registerOutputs();

@@ -60,7 +60,9 @@ export class PiHole extends pulumi.ComponentResource {
       { parent: this },
     );
 
-    this.ready = this.chart.ready;
+    this.ready = pulumi
+      .all([this.namespace, this.chart.ready])
+      .apply((ready) => ready.flat());
 
     this.registerOutputs();
   }

@@ -10,6 +10,8 @@ export class Glance extends pulumi.ComponentResource {
   public readonly service: k8s.core.v1.Service;
   public readonly ingress: k8s.networking.v1.Ingress;
 
+  public readonly ready: pulumi.Output<Array<pulumi.Resource>>;
+
   constructor(name: string, opts?: pulumi.ComponentResourceOptions) {
     super("homelab:application:glance", name, {}, opts);
 
@@ -160,6 +162,16 @@ export class Glance extends pulumi.ComponentResource {
       },
       { parent: this },
     );
+
+    this.ready = pulumi
+      .all([
+        this.namespace,
+        this.configMap,
+        this.deployment,
+        this.service,
+        this.ingress,
+      ])
+      .apply((ready) => ready.flat());
 
     this.registerOutputs();
   }

@@ -8,6 +8,8 @@ export class ExternalDns extends pulumi.ComponentResource {
   public readonly roleBinding: k8s.rbac.v1.ClusterRoleBinding;
   public readonly deployment: k8s.apps.v1.Deployment;
 
+  public readonly ready: pulumi.Output<Array<pulumi.Resource>>;
+
   constructor(name: string, opts?: pulumi.ComponentResourceOptions) {
     super("homelab:system:external_dns", name, {}, opts);
 
@@ -127,6 +129,16 @@ export class ExternalDns extends pulumi.ComponentResource {
       },
       { parent: this },
     );
+
+    this.ready = pulumi
+      .all([
+        this.namespace,
+        this.serviceAccount,
+        this.clusterRole,
+        this.roleBinding,
+        this.deployment,
+      ])
+      .apply((ready) => ready.flat());
 
     this.registerOutputs();
   }
