@@ -5,6 +5,8 @@ export class PiHole extends pulumi.ComponentResource {
   public readonly namespace: k8s.core.v1.Namespace;
   public readonly chart: k8s.helm.v3.Chart;
 
+  public readonly ready: pulumi.Output<Array<pulumi.Resource>>;
+
   constructor(name: string, opts?: pulumi.ComponentResourceOptions) {
     super("homelab:system:pihole", name, {}, opts);
 
@@ -57,6 +59,8 @@ export class PiHole extends pulumi.ComponentResource {
       },
       { parent: this },
     );
+
+    this.ready = this.chart.ready;
 
     this.registerOutputs();
   }
