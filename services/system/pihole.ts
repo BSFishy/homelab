@@ -31,7 +31,7 @@ export class PiHole extends pulumi.ComponentResource {
         values: {
           adminPassword: "abc",
           serviceWeb: {
-            type: "LoadBalancer",
+            type: "ClusterIP",
           },
           serviceDns: {
             type: "LoadBalancer",

@@ -2,6 +2,7 @@ import * as pulumi from "@pulumi/pulumi";
 import * as k8s from "@pulumi/kubernetes";
 import * as fs from "fs";
 import * as path from "path";
+import { subdomain } from "../config";
 
 export class Glance extends pulumi.ComponentResource {
   public readonly namespace: k8s.core.v1.Namespace;
@@ -122,7 +123,7 @@ export class Glance extends pulumi.ComponentResource {
               targetPort: 8080,
             },
           ],
-          type: "LoadBalancer",
+          type: "ClusterIP",
         },
       },
       { parent: this },
@@ -141,7 +142,7 @@ export class Glance extends pulumi.ComponentResource {
         spec: {
           rules: [
             {
-              host: "glance.home", // Replace with your custom domain
+              host: subdomain("glance"),
               http: {
                 paths: [
                   {
