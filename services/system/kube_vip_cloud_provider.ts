@@ -1,5 +1,6 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as k8s from "@pulumi/kubernetes";
+import { ready } from "../util";
 
 export class KubeVipCloudProvider extends pulumi.ComponentResource {
   public readonly namespace: k8s.core.v1.Namespace;
@@ -189,16 +190,14 @@ export class KubeVipCloudProvider extends pulumi.ComponentResource {
       { parent: this },
     );
 
-    this.ready = pulumi
-      .all([
-        this.namespace,
-        this.serviceAccount,
-        this.clusterRole,
-        this.clusterRoleBinding,
-        this.deployment,
-        this.configMap,
-      ])
-      .apply((ready) => ready.flat());
+    this.ready = ready([
+      this.namespace,
+      this.serviceAccount,
+      this.clusterRole,
+      this.clusterRoleBinding,
+      this.deployment,
+      this.configMap,
+    ]);
 
     this.registerOutputs();
   }

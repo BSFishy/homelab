@@ -5,6 +5,7 @@ import { KubeVip } from "./kube_vip";
 import { KubeVipCloudProvider } from "./kube_vip_cloud_provider";
 import { PiHole } from "./pihole";
 import { Traefik } from "./traefik";
+import { ready } from "../util";
 
 export class System extends pulumi.ComponentResource {
   public readonly cloudflare: Cloudflare;
@@ -28,28 +29,28 @@ export class System extends pulumi.ComponentResource {
 
     this.traefik = new Traefik("traefik", {
       parent: this,
-      dependsOn: pulumi
-        .all([this.kube_vip.ready, this.kube_vip_cloud_provider.ready])
-        .apply((ready) => ready.flat()),
+      dependsOn: ready([
+        this.kube_vip.ready,
+        this.kube_vip_cloud_provider.ready,
+      ]),
     });
 
     this.pihole = new PiHole("pihole", {
       parent: this,
-      dependsOn: pulumi
-        .all([this.kube_vip.ready, this.kube_vip_cloud_provider.ready])
-        .apply((ready) => ready.flat()),
+      dependsOn: ready([
+        this.kube_vip.ready,
+        this.kube_vip_cloud_provider.ready,
+      ]),
     });
 
     this.external_dns = new ExternalDns("external-dns", {
       parent: this,
-      dependsOn: pulumi
-        .all([
-          this.kube_vip.ready,
-          this.kube_vip_cloud_provider.ready,
-          this.traefik.ready,
-          this.pihole.ready,
-        ])
-        .apply((ready) => ready.flat()),
+      dependsOn: ready([
+        this.kube_vip.ready,
+        this.kube_vip_cloud_provider.ready,
+        this.traefik.ready,
+        this.pihole.ready,
+      ]),
     });
 
     const piholeChart = this.pihole.chart;
@@ -91,22 +92,18 @@ export class System extends pulumi.ComponentResource {
       },
       {
         parent: this,
-        dependsOn: pulumi
-          .all([this.pihole.ready, this.traefik.ready])
-          .apply((ready) => ready.flat()),
+        dependsOn: ready([this.pihole.ready, this.traefik.ready]),
       },
     );
 
-    this.ready = pulumi
-      .all([
-        this.kube_vip.ready,
-        this.kube_vip_cloud_provider.ready,
-        this.traefik.ready,
-        this.pihole.ready,
-        this.external_dns.ready,
-        this.cloudflare.ready,
-      ])
-      .apply((ready) => ready.flat());
+    this.ready = ready([
+      this.kube_vip.ready,
+      this.kube_vip_cloud_provider.ready,
+      this.traefik.ready,
+      this.pihole.ready,
+      this.external_dns.ready,
+      this.cloudflare.ready,
+    ]);
 
     this.registerOutputs();
   }

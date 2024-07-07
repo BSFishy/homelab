@@ -3,6 +3,7 @@ import * as k8s from "@pulumi/kubernetes";
 import * as fs from "fs";
 import * as path from "path";
 import { subdomain } from "../config";
+import { ready } from "../util";
 
 export class Glance extends pulumi.ComponentResource {
   public readonly namespace: k8s.core.v1.Namespace;
@@ -164,15 +165,13 @@ export class Glance extends pulumi.ComponentResource {
       { parent: this },
     );
 
-    this.ready = pulumi
-      .all([
-        this.namespace,
-        this.configMap,
-        this.deployment,
-        this.service,
-        this.ingress,
-      ])
-      .apply((ready) => ready.flat());
+    this.ready = ready([
+      this.namespace,
+      this.configMap,
+      this.deployment,
+      this.service,
+      this.ingress,
+    ]);
 
     this.registerOutputs();
   }

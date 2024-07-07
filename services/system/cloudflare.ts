@@ -2,6 +2,7 @@ import * as pulumi from "@pulumi/pulumi";
 import * as random from "@pulumi/random";
 import * as cf from "@pulumi/cloudflare";
 import { CONFIG } from "../config";
+import { ready } from "../util";
 
 interface CloudflareArgs {
   dnsUdpIp: pulumi.Input<string>;
@@ -162,21 +163,17 @@ export class Cloudflare extends pulumi.ComponentResource {
       { parent: this, dependsOn: [this.tunnel] },
     );
 
-    this.ready = pulumi
-      .all(
-        [
-          this.tunnelSecret,
-          this.virtualNetwork,
-          this.tunnel,
-          this.dnsUdpRoute,
-          this.dnsTcpRoute!,
-          this.webRoute,
-          this.teamsAccount,
-          this.fallbackDomain,
-          this.splitTunnel,
-        ].filter(Boolean),
-      )
-      .apply((ready) => ready.flat());
+    this.ready = ready([
+      this.tunnelSecret,
+      this.virtualNetwork,
+      this.tunnel,
+      this.dnsUdpRoute,
+      this.dnsTcpRoute,
+      this.webRoute,
+      this.teamsAccount,
+      this.fallbackDomain,
+      this.splitTunnel,
+    ]);
 
     this.registerOutputs();
   }

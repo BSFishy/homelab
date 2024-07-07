@@ -1,6 +1,7 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as k8s from "@pulumi/kubernetes";
 import { CONFIG } from "../config";
+import { ready } from "../util";
 
 export class PiHole extends pulumi.ComponentResource {
   public readonly namespace: k8s.core.v1.Namespace;
@@ -62,9 +63,7 @@ export class PiHole extends pulumi.ComponentResource {
       { parent: this },
     );
 
-    this.ready = pulumi
-      .all([this.namespace, this.chart.ready])
-      .apply((ready) => ready.flat());
+    this.ready = ready([this.namespace, this.chart.ready]);
 
     this.registerOutputs();
   }

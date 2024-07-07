@@ -1,5 +1,6 @@
 import * as pulumi from "@pulumi/pulumi";
 import { Glance } from "./glance";
+import { ready } from "../util";
 
 export class Applications extends pulumi.ComponentResource {
   public readonly glance: Glance;
@@ -11,7 +12,7 @@ export class Applications extends pulumi.ComponentResource {
 
     this.glance = new Glance("glance", { parent: this });
 
-    this.ready = pulumi.all([this.glance.ready]).apply((ready) => ready.flat());
+    this.ready = ready([this.glance.ready]);
 
     this.registerOutputs();
   }

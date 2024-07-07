@@ -1,5 +1,6 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as k8s from "@pulumi/kubernetes";
+import { ready } from "../util";
 
 export class MetalLB extends pulumi.ComponentResource {
   public readonly namespace: k8s.core.v1.Namespace;
@@ -63,14 +64,12 @@ export class MetalLB extends pulumi.ComponentResource {
       { parent: this, dependsOn: this.chart.ready },
     );
 
-    this.ready = pulumi
-      .all([
-        this.namespace,
-        this.chart.ready,
-        this.addressPool,
-        this.l2Advertisement,
-      ])
-      .apply((ready) => ready.flat());
+    this.ready = ready([
+      this.namespace,
+      this.chart.ready,
+      this.addressPool,
+      this.l2Advertisement,
+    ]);
 
     this.registerOutputs();
   }
