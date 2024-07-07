@@ -1,5 +1,6 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as k8s from "@pulumi/kubernetes";
+import { CONFIG } from "../config";
 
 export class PiHole extends pulumi.ComponentResource {
   public readonly namespace: k8s.core.v1.Namespace;
@@ -35,6 +36,7 @@ export class PiHole extends pulumi.ComponentResource {
           },
           serviceDns: {
             type: "LoadBalancer",
+            loadBalancerIP: CONFIG.useDhcp ? "0.0.0.0" : undefined,
           },
           serviceDhcp: {
             enabled: false,

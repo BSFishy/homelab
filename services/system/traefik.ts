@@ -1,5 +1,6 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as k8s from "@pulumi/kubernetes";
+import { CONFIG } from "../config";
 
 export class Traefik extends pulumi.ComponentResource {
   public readonly namespace: k8s.core.v1.Namespace;
@@ -30,8 +31,10 @@ export class Traefik extends pulumi.ComponentResource {
         },
         values: {
           service: {
-            // Type must be ClusterIP instead of LoadBalancer on k3s
             type: "LoadBalancer",
+            spec: {
+              loadBalancerIP: CONFIG.useDhcp ? "0.0.0.0" : undefined,
+            },
           },
           ingressRoute: {
             dashboard: {

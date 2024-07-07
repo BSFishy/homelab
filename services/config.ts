@@ -9,7 +9,9 @@ export function getConfig() {
   const domain = getDomain(config, account.id as pulumi.Output<string>);
   const privateSubdomain = config.get("privateSubdomain") ?? "home";
 
-  return { account, domain, privateSubdomain };
+  const useDhcp = config.getBoolean("useDhcp") ?? false;
+
+  return { account, domain, privateSubdomain, useDhcp };
 }
 
 function getAccount(config: pulumi.Config) {
