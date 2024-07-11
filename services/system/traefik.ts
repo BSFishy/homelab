@@ -1,6 +1,6 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as k8s from "@pulumi/kubernetes";
-import { CONFIG } from "../config";
+import { CONFIG, subdomain } from "../config";
 import { ready } from "../util";
 
 interface TraefikArgs {
@@ -20,6 +20,7 @@ export class Traefik extends pulumi.ComponentResource {
   ) {
     super("homelab:system:traefik", name, {}, opts);
 
+    const host = subdomain("traefik");
     this.chart = new k8s.helm.v3.Chart(
       "traefik-chart",
       {
@@ -31,6 +32,9 @@ export class Traefik extends pulumi.ComponentResource {
         values: {
           service: {
             type: "LoadBalancer",
+            annotations: {
+              "external-dns.alpha.kubernetes.io/hostname": host,
+            },
             spec: {
               loadBalancerIP: CONFIG.useDhcp ? "0.0.0.0" : undefined,
             },
@@ -38,7 +42,10 @@ export class Traefik extends pulumi.ComponentResource {
           ingressRoute: {
             dashboard: {
               enabled: true,
-              matchRule: "PathPrefix(`/dashboard`) || PathPrefix(`/api`)",
+              matchRule: host.apply(
+                (host) =>
+                  `Host(\`${host}\`) && (PathPrefix(\`/dashboard\`) || PathPrefix(\`/api\`))`,
+              ),
               entryPoints: ["web", "websecure"],
             },
           },
