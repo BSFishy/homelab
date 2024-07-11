@@ -15,10 +15,10 @@
         devShells = {
           default = pkgs.mkShell {
             buildInputs = [
-              pkgs.docker
-              pkgs.docker-compose
-              pkgs.cargo
-              pkgs.rust-analyzer
+              pkgs.k3s
+              pkgs.pulumi-bin
+              pkgs.pulumiPackages.pulumi-language-nodejs
+              pkgs.nodejs_22
             ];
           };
         };
