@@ -3,30 +3,28 @@ import * as k8s from "@pulumi/kubernetes";
 import { CONFIG } from "../config";
 import { ready } from "../util";
 
+interface TraefikArgs {
+  namespace: pulumi.Input<string>;
+  certSecretName: pulumi.Input<string>;
+}
+
 export class Traefik extends pulumi.ComponentResource {
-  public readonly namespace: k8s.core.v1.Namespace;
   public readonly chart: k8s.helm.v3.Chart;
 
   public readonly ready: pulumi.Output<Array<pulumi.Resource>>;
 
-  constructor(name: string, opts?: pulumi.ComponentResourceOptions) {
+  constructor(
+    name: string,
+    args: TraefikArgs,
+    opts?: pulumi.ComponentResourceOptions,
+  ) {
     super("homelab:system:traefik", name, {}, opts);
-
-    this.namespace = new k8s.core.v1.Namespace(
-      "traefik-namespace",
-      {
-        metadata: {
-          name: "traefik",
-        },
-      },
-      { parent: this },
-    );
 
     this.chart = new k8s.helm.v3.Chart(
       "traefik-chart",
       {
         chart: "traefik",
-        namespace: this.namespace.metadata.name,
+        namespace: args.namespace,
         fetchOpts: {
           repo: "https://traefik.github.io/charts",
         },
@@ -39,6 +37,7 @@ export class Traefik extends pulumi.ComponentResource {
           },
           ingressRoute: {
             dashboard: {
+              enabled: true,
               matchRule: "PathPrefix(`/dashboard`) || PathPrefix(`/api`)",
               entryPoints: ["web", "websecure"],
             },
@@ -50,12 +49,19 @@ export class Traefik extends pulumi.ComponentResource {
               },
             },
           },
+          tlsStore: {
+            default: {
+              defaultCertificate: {
+                secretName: args.certSecretName,
+              },
+            },
+          },
         },
       },
       { parent: this },
     );
 
-    this.ready = ready([this.namespace, this.chart.ready]);
+    this.ready = ready([this.chart.ready]);
 
     this.registerOutputs();
   }

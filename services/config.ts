@@ -11,7 +11,9 @@ export function getConfig() {
 
   const useDhcp = config.getBoolean("useDhcp") ?? false;
 
-  return { account, domain, privateSubdomain, useDhcp };
+  const email = config.require("email");
+
+  return { account, domain, privateSubdomain, useDhcp, email };
 }
 
 function getAccount(config: pulumi.Config) {
@@ -57,15 +59,17 @@ function getDomain(config: pulumi.Config, accountId: pulumi.Input<string>) {
 
 export const CONFIG = getConfig();
 
-export function subdomain(name: string, priv: boolean = true) {
+export function subdomain(name?: string, priv: boolean = true) {
   const domain = CONFIG.domain;
   const subdomain = CONFIG.privateSubdomain;
 
   return domain.apply((domain) => {
+    const prefix = name ? `${name}.` : "";
+
     if (priv) {
-      return `${name}.${subdomain}.${domain.name}`;
+      return prefix + `${subdomain}.${domain.name}`;
     } else {
-      return `${name}.${domain.name}`;
+      return prefix + domain.name;
     }
   });
 }

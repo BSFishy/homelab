@@ -1,4 +1,6 @@
 import * as pulumi from "@pulumi/pulumi";
+import * as k8s from "@pulumi/kubernetes";
+import { CertManager } from "./cert_manager";
 import { Cloudflare } from "./cloudflare";
 import { Cloudflared } from "./cloudflared";
 import { ExternalDns } from "./external_dns";
@@ -9,6 +11,9 @@ import { Traefik } from "./traefik";
 import { ready } from "../util";
 
 export class System extends pulumi.ComponentResource {
+  public readonly traefikNamespace: k8s.core.v1.Namespace;
+
+  public readonly cert_manager: CertManager;
   public readonly cloudflare: Cloudflare;
   public readonly cloudflared: Cloudflared;
   public readonly external_dns: ExternalDns;
@@ -29,19 +34,50 @@ export class System extends pulumi.ComponentResource {
       { parent: this },
     );
 
-    this.traefik = new Traefik("traefik", {
-      parent: this,
-      dependsOn: ready([
-        this.kube_vip.ready,
-        this.kube_vip_cloud_provider.ready,
-      ]),
-    });
+    this.traefikNamespace = new k8s.core.v1.Namespace(
+      "traefik-namespace",
+      {
+        metadata: {
+          name: "traefik",
+        },
+      },
+      { parent: this },
+    );
+
+    this.cert_manager = new CertManager(
+      "cert-manager",
+      { traefikNamespace: this.traefikNamespace.metadata.name },
+      {
+        parent: this,
+        dependsOn: ready([
+          this.kube_vip.ready,
+          this.kube_vip_cloud_provider.ready,
+        ]),
+      },
+    );
+
+    this.traefik = new Traefik(
+      "traefik",
+      {
+        namespace: this.traefikNamespace.metadata.name,
+        certSecretName: this.cert_manager.secretName,
+      },
+      {
+        parent: this,
+        dependsOn: ready([
+          this.kube_vip.ready,
+          this.kube_vip_cloud_provider.ready,
+          this.cert_manager.ready,
+        ]),
+      },
+    );
 
     this.pihole = new PiHole("pihole", {
       parent: this,
       dependsOn: ready([
         this.kube_vip.ready,
         this.kube_vip_cloud_provider.ready,
+        this.traefik.ready,
       ]),
     });
 
@@ -105,8 +141,11 @@ export class System extends pulumi.ComponentResource {
     );
 
     this.ready = ready([
+      this.traefikNamespace,
+
       this.kube_vip.ready,
       this.kube_vip_cloud_provider.ready,
+      this.cert_manager.ready,
       this.traefik.ready,
       this.pihole.ready,
       this.external_dns.ready,
