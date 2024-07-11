@@ -12,16 +12,17 @@ pages:
       - size: small
         widgets:
           - type: calendar
-          - type: monitor
-            cache: 1m
-            title: Services
-            sites:
-              - title: Glance
-                url: http://glance.home/
-              - title: Traefik
-                url: http://traefik.home/dashboard/
-              - title: PiHole
-                url: http://pihole.home/admin/
+          - type: bookmarks
+            groups:
+              - links:
+                  - title: Website
+                    url: https://www.mattprovost.dev
+                  - title: Glance
+                    url: https://glance.home.mattprovost.dev/
+                  - title: Traefik
+                    url: https://traefik.home.mattprovost.dev/dashboard/
+                  - title: PiHole
+                    url: https://pihole.home.mattprovost.dev/admin/
           - type: twitch-channels
             channels:
               - theprimeagen
