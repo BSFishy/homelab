@@ -147,7 +147,7 @@ export class KubeVip extends pulumi.ComponentResource {
                     { name: "vip_arp", value: "true" },
                     { name: "port", value: "6443" },
                     // TODO: make this configuration
-                    { name: "vip_interface", value: "wlp0s20f3" },
+                    { name: "vip_interface", value: "enp0s20f0u2" },
                     { name: "vip_cidr", value: "32" },
                     { name: "cp_enable", value: "true" },
                     {
@@ -161,7 +161,7 @@ export class KubeVip extends pulumi.ComponentResource {
                     { name: "vip_renewdeadline", value: "3" },
                     { name: "vip_retryperiod", value: "1" },
                     // TODO: make this configuration
-                    { name: "address", value: "192.168.1.140" },
+                    { name: "address", value: "192.168.157.140" },
                   ],
                   image: "ghcr.io/kube-vip/kube-vip:v0.4.0",
                   imagePullPolicy: "Always",

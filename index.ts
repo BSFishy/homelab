@@ -7,5 +7,9 @@ const applications = new Applications("applications", {
   dependsOn: system.ready,
 });
 
-export const cloudflareAccount = CONFIG.account.name;
-export const cloudflareDomain = CONFIG.domain.name;
+export const cloudflareAccount = applications.ready.apply(
+  () => CONFIG.account.name,
+);
+export const cloudflareDomain = applications.ready.apply(
+  () => CONFIG.domain.name,
+);

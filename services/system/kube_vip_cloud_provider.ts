@@ -184,7 +184,7 @@ export class KubeVipCloudProvider extends pulumi.ComponentResource {
       {
         metadata: { name: "kubevip", namespace: "kube-system" },
         data: {
-          "cidr-global": "192.168.1.0/24",
+          "range-global": "192.168.157.10-192.168.157.240",
         },
       },
       { parent: this },

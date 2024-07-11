@@ -1,6 +1,6 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as k8s from "@pulumi/kubernetes";
-import { CONFIG } from "../config";
+import { CONFIG, subdomain } from "../config";
 import { ready } from "../util";
 
 export class PiHole extends pulumi.ComponentResource {
@@ -31,9 +31,11 @@ export class PiHole extends pulumi.ComponentResource {
           repo: "https://mojo2600.github.io/pihole-kubernetes/",
         },
         values: {
+          DNS1: "1.1.1.1",
+          DNS2: "1.0.0.1",
           adminPassword: "abc",
           serviceWeb: {
-            type: "ClusterIP",
+            type: "LoadBalancer",
           },
           serviceDns: {
             type: "LoadBalancer",
@@ -44,19 +46,19 @@ export class PiHole extends pulumi.ComponentResource {
           },
           ingress: {
             enabled: true,
-            hosts: ["pihole.home"],
+            hosts: [subdomain("pihole")],
           },
           podDnsConfig: {
             enabled: true,
             policy: "None",
-            nameservers: ["127.0.0.1", "1.1.1.1", "1.0.0.1"],
+            nameservers: ["1.1.1.1", "1.0.0.1"],
           },
           doh: {
             enabled: true,
             pullPolicy: "Always",
-          },
-          envVars: {
-            DOH_UPSTREAM: "https://1.1.1.1/dns-query",
+            envVars: {
+              DOH_UPSTREAM: "https://1.1.1.1/dns-query",
+            },
           },
         },
       },

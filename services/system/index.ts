@@ -1,5 +1,6 @@
 import * as pulumi from "@pulumi/pulumi";
 import { Cloudflare } from "./cloudflare";
+import { Cloudflared } from "./cloudflared";
 import { ExternalDns } from "./external_dns";
 import { KubeVip } from "./kube_vip";
 import { KubeVipCloudProvider } from "./kube_vip_cloud_provider";
@@ -9,6 +10,7 @@ import { ready } from "../util";
 
 export class System extends pulumi.ComponentResource {
   public readonly cloudflare: Cloudflare;
+  public readonly cloudflared: Cloudflared;
   public readonly external_dns: ExternalDns;
   public readonly kube_vip: KubeVip;
   public readonly kube_vip_cloud_provider: KubeVipCloudProvider;
@@ -96,6 +98,12 @@ export class System extends pulumi.ComponentResource {
       },
     );
 
+    this.cloudflared = new Cloudflared(
+      "cloudflared",
+      { tunnelToken: this.cloudflare.tunnel.tunnelToken },
+      { parent: this, dependsOn: this.cloudflare.ready },
+    );
+
     this.ready = ready([
       this.kube_vip.ready,
       this.kube_vip_cloud_provider.ready,
@@ -103,6 +111,7 @@ export class System extends pulumi.ComponentResource {
       this.pihole.ready,
       this.external_dns.ready,
       this.cloudflare.ready,
+      this.cloudflared.ready,
     ]);
 
     this.registerOutputs();
