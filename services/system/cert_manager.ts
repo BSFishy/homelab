@@ -82,6 +82,8 @@ export class CertManager extends pulumi.ComponentResource {
             effect: "allow",
             permissionGroups: [editDnsPermission, zoneReadPermission],
             resources: CONFIG.domain.apply((domain) => ({
+              // NOTE: I couldn't find a way to retrieve this from the API,
+              // but this feels flakey. Maybe ask the dev team?
               [`com.cloudflare.api.account.zone.${domain.id!}`]: "*",
             })),
           },

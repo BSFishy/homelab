@@ -1,5 +1,6 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as k8s from "@pulumi/kubernetes";
+import { CONFIG } from "../config";
 import { ready } from "../util";
 
 export class KubeVipCloudProvider extends pulumi.ComponentResource {
@@ -184,7 +185,7 @@ export class KubeVipCloudProvider extends pulumi.ComponentResource {
       {
         metadata: { name: "kubevip", namespace: "kube-system" },
         data: {
-          "range-global": "192.168.157.10-192.168.157.240",
+          "range-global": CONFIG.ip.lbRange,
         },
       },
       { parent: this },

@@ -13,7 +13,9 @@ export function getConfig() {
 
   const email = config.require("email");
 
-  return { account, domain, privateSubdomain, useDhcp, email };
+  const ip = ipConfig(config);
+
+  return { account, domain, privateSubdomain, useDhcp, email, ip };
 }
 
 function getAccount(config: pulumi.Config) {
@@ -72,4 +74,13 @@ export function subdomain(name?: string, priv: boolean = true) {
       return prefix + domain.name;
     }
   });
+}
+
+export function ipConfig(config: pulumi.Config) {
+  const vipInterface = config.require("virtual-ip-interface");
+  const vip = config.require("virtual-ip");
+
+  const lbRange = config.require("load-balancer-ip-range");
+
+  return { vipInterface, vip, lbRange };
 }
