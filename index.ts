@@ -1,10 +1,14 @@
-import { Applications, System } from "./services";
+import { Applications, Support, System } from "./services";
 import { CONFIG } from "./services/config";
 
 const system = new System("system");
 
-const applications = new Applications("applications", {
+const support = new Support("support", {
   dependsOn: system.ready,
+});
+
+const applications = new Applications("applications", {
+  dependsOn: support.ready,
 });
 
 export const cloudflareAccount = applications.ready.apply(
