@@ -14,12 +14,9 @@
       {
         devShells = {
           default = pkgs.mkShell {
-            buildInputs = [
-              pkgs.k3s
-              pkgs.pulumi-bin
-              pkgs.pulumiPackages.pulumi-language-nodejs
-              pkgs.nodejs_22
-            ];
+            buildInputs =
+              [
+              ];
           };
         };
       }

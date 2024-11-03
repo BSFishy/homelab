@@ -1,13 +1,6 @@
 # Ignore direnv cache
 /.direnv
 
-# Ignore Pulumi artifacts
-/bin
-/node_modules
-
-# Ignore Pulumi stacks
-/Pulumi.*.yaml
-
 # Ignore temporary and system files
 *.tmp
 *.swp
