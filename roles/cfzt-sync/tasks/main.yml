@@ -1,0 +1,40 @@
+- name: Create a directory for project
+  tempfile:
+    state: directory
+  register: proj_dir
+
+- name: Copy application files
+  copy:
+    src: "{{ role_path }}/files/"
+    dest: "{{ proj_dir.path }}"
+    # src: "{{ item }}"
+    # dest: "{{ proj_dir.path }}/{{ item }}"
+  # with_items:
+  #   - Dockerfile
+  #   - go.mod
+  #   - go.sum
+  #   - main.go
+
+- name: Render Docker Compose file from template
+  template:
+    src: docker-compose.yml.j2
+    dest: "{{ proj_dir.path }}/docker-compose.yml"
+
+- name: Build Docker image
+  community.docker.docker_image_build:
+    path: "{{ proj_dir.path }}"
+    # name: 127.0.0.1:5000/cfzt-sync
+    name: "{{ image }}"
+    rebuild: "always"
+    outputs:
+      - push: true
+        type: image
+
+- name: Deploy cfzt-sync stack
+  docker_stack:
+    state: present
+    name: cfzt-sync
+    compose:
+      - "{{ proj_dir.path }}/docker-compose.yml"
+    prune: true
+    resolve_image: always

@@ -1,0 +1,23 @@
+- name: Create a temporary file for Docker Compose
+  tempfile:
+    state: file
+    suffix: ".yml"
+  register: temp_compose_file
+
+- name: Render Docker Compose file from template
+  template:
+    src: docker-compose.yml.j2
+    dest: "{{ temp_compose_file.path }}"
+
+- name: Deploy cloudflared stack
+  docker_stack:
+    state: present
+    name: cloudflared
+    compose:
+      - "{{ temp_compose_file.path }}"
+    prune: true
+
+- name: Remove the temporary Docker Compose file
+  file:
+    path: "{{ temp_compose_file.path }}"
+    state: absent

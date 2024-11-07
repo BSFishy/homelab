@@ -14,9 +14,13 @@
       {
         devShells = {
           default = pkgs.mkShell {
-            buildInputs =
-              [
-              ];
+            buildInputs = [
+              pkgs.docker
+              pkgs.just
+              pkgs.go
+              pkgs.ansible
+              pkgs.python312Packages.docker
+            ];
           };
         };
       }

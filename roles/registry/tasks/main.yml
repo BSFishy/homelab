@@ -1,0 +1,7 @@
+- name: Deploy registry stack
+  docker_stack:
+    state: present
+    name: registry
+    compose:
+      - "{{ role_path }}/files/docker-compose.yml"
+    prune: true
