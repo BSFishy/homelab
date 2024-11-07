@@ -9,6 +9,15 @@
     src: docker-compose.yml.j2
     dest: "{{ temp_compose_file.path }}"
 
+- name: Create cloudflared network
+  community.docker.docker_network:
+    name: cloudflared-network
+    driver: overlay
+    scope: global
+    attachable: true
+    appends: true
+    enable_ipv6: true
+
 - name: Deploy cloudflared stack
   docker_stack:
     state: present
