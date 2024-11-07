@@ -1,0 +1,18 @@
+- name: Ensure python3 is installed
+  ansible.builtin.package:
+    name: python3
+    state: present
+
+- name: Ensure pip is installed
+  ansible.builtin.package:
+    name: python3-pip
+    state: present
+
+- name: Install jsondiff and pyyaml using pip
+  ansible.builtin.pip:
+    name:
+      - jsondiff
+      - pyyaml
+      - cloudflare
+    state: present
+    extra_args: --break-system-packages

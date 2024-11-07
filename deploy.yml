@@ -1,0 +1,52 @@
+- name: Configure Cloudflare Zero Trust
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Create Cloudflare Zero Trust Tunnel
+      cloudflare_tunnel:
+        state: present
+        api_email: "{{ lookup('ansible.builtin.env', 'CLOUDFLARE_API_EMAIL') }}"
+        api_key: "{{ lookup('ansible.builtin.env', 'CLOUDFLARE_API_KEY') }}"
+        account_id: "{{ lookup('ansible.builtin.env', 'CLOUDFLARE_ACCOUNT_ID') }}"
+        tunnel_secret: "{{ lookup('ansible.builtin.env', 'CLOUDFLARE_TUNNEL_SECRET') }}"
+        name: homelab2
+      register: cloudflare_tunnel
+
+- name: Deploy Docker stacks
+  hosts: manager
+  become: true
+  gather_facts: true
+  roles:
+    - prepare
+    - registry
+    - cloudflared
+    - cfzt-sync
+  tasks:
+    - name: Deploy portainer stack
+      docker_stack:
+        state: present
+        name: portainer
+        compose:
+          - stacks/portainer/docker-compose.yml
+        prune: true
+
+    - name: Deploy dozzle stack
+      docker_stack:
+        state: present
+        name: dozzle
+        compose:
+          - stacks/dozzle/docker-compose.yml
+        prune: true
+
+    # - name: Render Docker Compose file from template
+    #   template:
+    #     src: stacks/cloudflared/docker-compose.yml.j2
+    #     dest: stacks/cloudflared/docker-compose.yml
+    #
+    # - name: Deploy cloudflared stack
+    #   docker_stack:
+    #     state: present
+    #     name: cloudflared
+    #     compose:
+    #       - stacks/cloudflared/docker-compose.yml
+    #     prune: true

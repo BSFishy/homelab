@@ -1,0 +1,13 @@
+services:
+  dozzle:
+    image: amir20/dozzle:latest
+    environment:
+      DOZZLE_ENABLE_ACTIONS: "true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - 8080:8080
+    deploy:
+      labels:
+        dev.mattprovost.domain: dozzle.home.mattprovost.dev
+        dev.mattprovost.port: 8080

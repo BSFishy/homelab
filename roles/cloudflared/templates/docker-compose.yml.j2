@@ -1,0 +1,6 @@
+services:
+  cloudflared:
+    image: cloudflare/cloudflared
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN={{ cloudflare_tunnel.tunnel_token }}
