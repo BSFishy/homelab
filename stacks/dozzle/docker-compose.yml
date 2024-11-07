@@ -11,3 +11,9 @@ services:
       labels:
         dev.mattprovost.domain: dozzle.home.mattprovost.dev
         dev.mattprovost.port: 8080
+    networks:
+      - cloudflared-network
+
+networks:
+  cloudflared-network:
+    external: true

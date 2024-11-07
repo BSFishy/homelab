@@ -4,3 +4,9 @@ services:
     command: tunnel run
     environment:
       - TUNNEL_TOKEN={{ cloudflare_tunnel.tunnel_token }}
+    networks:
+      - cloudflared-network
+
+networks:
+  cloudflared-network:
+    external: true
