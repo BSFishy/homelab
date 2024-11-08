@@ -1,0 +1,7 @@
+- name: Deploy portainer stack
+  docker_stack:
+    state: present
+    name: portainer
+    compose:
+      - "{{ role_path }}/files/docker-compose.yml"
+    prune: true
