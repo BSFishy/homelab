@@ -1,0 +1,7 @@
+- name: Deploy dozzle stack
+  docker_stack:
+    state: present
+    name: dozzle
+    compose:
+      - "{{ role_path }}/files/docker-compose.yml"
+    prune: true
