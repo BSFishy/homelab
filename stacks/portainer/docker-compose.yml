@@ -2,6 +2,8 @@ networks:
   agent_network:
     driver: overlay
     attachable: true
+  cloudflared-network:
+    external: true
 
 volumes:
   portainer_data:
@@ -23,16 +25,21 @@ services:
     image: portainer/portainer-ce:2.21.4
     command: -H tcp://tasks.agent:9001 --tlsskipverify
     ports:
-      - "9443:9443"
-      - "9000:9000"
-      - "8000:8000"
+      # - "9443"
+      - "9000"
+      # - "8000:8000"
     volumes:
       - portainer_data:/data
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - agent_network
+      - cloudflared-network
     deploy:
       mode: replicated
       replicas: 1
       placement:
         constraints: [node.role == manager]
+      labels:
+        dev.mattprovost.portainer.domain: portainer.home.mattprovost.dev
+        dev.mattprovost.portainer.port: 9000
+        dev.mattprovost.portainer.access: "true"

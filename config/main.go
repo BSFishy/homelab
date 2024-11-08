@@ -40,13 +40,15 @@ func main() {
 		api_email  string
 		api_key    string
 		account_id string
+		group_id   string
 	)
 
 	form := huh.NewForm(
 		huh.NewGroup(
 			huh.NewInput().Title("What is your Cloudflare API Email").Value(&api_email),
-			huh.NewInput().Title("What is your Cloudflare API Key").Value(&api_key),
+			huh.NewInput().Title("What is your Cloudflare API Key").EchoMode(huh.EchoModePassword).Value(&api_key),
 			huh.NewInput().Title("What is your Cloudflare Account ID?").Value(&account_id),
+			huh.NewInput().Title("What is your Cloudflare Access group ID?").Value(&group_id),
 		),
 	)
 
@@ -65,6 +67,7 @@ func main() {
 		"CLOUDFLARE_API_KEY":       api_key,
 		"CLOUDFLARE_ACCOUNT_ID":    account_id,
 		"CLOUDFLARE_TUNNEL_SECRET": tunnel_secret,
+		"CLOUDFLARE_GROUP_ID":      group_id,
 	}
 
 	var env string
