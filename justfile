@@ -14,6 +14,10 @@ config:
 dev:
   ansible-playbook deploy.yml -i inventory/localhost.yml
 
+# delete all stacks
+clean-stacks:
+  docker stack ls --format json | jq -r .Name | xargs docker stack rm
+
 # deploy the local registry
 [group('deploy')]
 deploy-registry:
