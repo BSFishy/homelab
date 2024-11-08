@@ -85,16 +85,19 @@ func getService(ctx context.Context, cli *client.Client, name string) (*swarm.Se
 func syncServices(cli *client.Client, api *cloudflare.API) error {
 	ctx := context.Background()
 
+	// get services as source of truth for configuration
 	services, err := cli.ServiceList(ctx, types.ServiceListOptions{})
 	if err != nil {
 		return err
 	}
 
+	// grab the current configuration to do an incremental update
 	config, err := api.GetTunnelConfiguration(ctx, account, tunnel_id)
 	if err != nil {
 		return err
 	}
 
+	// first we extract ingress rules from the list of services
 	var ingressRules []cloudflare.UnvalidatedIngressRule
 	for _, svc := range services {
 		serviceName := svc.Spec.Name
@@ -125,11 +128,13 @@ func syncServices(cli *client.Client, api *cloudflare.API) error {
 		}
 	}
 
+	// get dns records to incrementally update
 	zones, _, err := api.ListDNSRecords(ctx, zone, cloudflare.ListDNSRecordsParams{})
 	if err != nil {
 		return err
 	}
 
+	// delete dns records for deleted services
 	for _, rule := range config.Config.Ingress {
 		if rule.Hostname == "" {
 			continue
@@ -153,6 +158,7 @@ func syncServices(cli *client.Client, api *cloudflare.API) error {
 		}
 	}
 
+	// create dns records for new services
 	for _, rule := range ingressRules {
 		var record *cloudflare.DNSRecord
 		for i, z := range zones {
@@ -180,13 +186,16 @@ func syncServices(cli *client.Client, api *cloudflare.API) error {
 		}
 	}
 
+	// add the catch-all rule
 	ingressRules = append(ingressRules, cloudflare.UnvalidatedIngressRule{
 		Hostname: "",
 		Service:  "http_status:503",
 	})
 
+	// update the ingress rules
 	config.Config.Ingress = ingressRules
 
+	// update the tunnel configuration
 	_, err = api.UpdateTunnelConfiguration(ctx, account, cloudflare.TunnelConfigurationParams{
 		TunnelID: tunnel_id,
 		Config:   config.Config,

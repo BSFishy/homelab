@@ -42,7 +42,7 @@ func (d *Debouncer) start() {
 
 // execute is the function to be debounced
 func (d *Debouncer) execute() {
-	fmt.Println("\n\nFunction executed at", time.Now())
+	fmt.Println("Function executed at", time.Now())
 	if err := syncServices(d.cli, d.api); err != nil {
 		log.Printf("error syncing services: %s", err)
 	}
