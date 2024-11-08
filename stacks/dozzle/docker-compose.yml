@@ -2,17 +2,25 @@ services:
   dozzle:
     image: amir20/dozzle:latest
     environment:
-      DOZZLE_ENABLE_ACTIONS: "true"
+      - DOZZLE_ENABLE_ACTIONS=true
+      - DOZZLE_MODE=swarm
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     ports:
-      - 8080:8080
+      - 8080
     deploy:
+      mode: global
       labels:
         dev.mattprovost.domain: dozzle.home.mattprovost.dev
         dev.mattprovost.port: 8080
     networks:
       - cloudflared-network
+    healthcheck:
+      test: ["CMD", "/dozzle", "healthcheck"]
+      interval: 3s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
 
 networks:
   cloudflared-network:

@@ -12,12 +12,17 @@
         name: homelab2
       register: cloudflare_tunnel
 
-- name: Deploy Docker stacks
+- name: Prepare the metal for deployment
   hosts: manager
   become: true
   gather_facts: true
   roles:
     - prepare
+
+- name: Deploy Docker stacks
+  hosts: manager
+  gather_facts: true
+  roles:
     - registry
     - cloudflared
     - cfzt-sync

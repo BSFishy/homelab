@@ -102,7 +102,7 @@ func syncServices(cli *client.Client, api *cloudflare.API) error {
 		labels := svc.Spec.Labels
 
 		if domain, ok := labels["dev.mattprovost.domain"]; ok {
-			port := 80
+			targetPort := uint32(80)
 			if p, ok := labels["dev.mattprovost.port"]; ok {
 				np, err := strconv.Atoi(p)
 				if err != nil {
@@ -110,7 +110,7 @@ func syncServices(cli *client.Client, api *cloudflare.API) error {
 					continue
 				}
 
-				port = np
+				targetPort = uint32(np)
 			}
 
 			var rule *cloudflare.UnvalidatedIngressRule
@@ -122,11 +122,14 @@ func syncServices(cli *client.Client, api *cloudflare.API) error {
 				}
 			}
 
+			service := fmt.Sprintf("http://%s:%d", serviceName, targetPort)
 			if rule == nil {
 				rule = &cloudflare.UnvalidatedIngressRule{
 					Hostname: domain,
-					Service:  fmt.Sprintf("http://%s:%d", serviceName, port),
+					Service:  service,
 				}
+			} else {
+				rule.Service = service
 			}
 
 			ingressRules = append(ingressRules, *rule)
