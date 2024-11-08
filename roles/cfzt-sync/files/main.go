@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 	"time"
 
@@ -101,31 +100,21 @@ func syncServices(cli *client.Client, api *cloudflare.API) error {
 		serviceName := svc.Spec.Name
 		labels := svc.Spec.Labels
 
-		if domain, ok := labels["dev.mattprovost.domain"]; ok {
-			targetPort := uint32(80)
-			if p, ok := labels["dev.mattprovost.port"]; ok {
-				np, err := strconv.Atoi(p)
-				if err != nil {
-					fmt.Printf("failed to parse port for %s: %s\n", serviceName, p)
-					continue
-				}
-
-				targetPort = uint32(np)
-			}
-
+		domainInfo := extractDomainInfo(labels)
+		for _, domain := range domainInfo {
 			var rule *cloudflare.UnvalidatedIngressRule
 			for i, r := range config.Config.Ingress {
-				if r.Hostname == domain {
+				if r.Hostname == domain.Domain {
 					rule = &r
 					config.Config.Ingress = remove(config.Config.Ingress, i)
 					break
 				}
 			}
 
-			service := fmt.Sprintf("http://%s:%d", serviceName, targetPort)
+			service := fmt.Sprintf("http://%s:%d", serviceName, domain.Port)
 			if rule == nil {
 				rule = &cloudflare.UnvalidatedIngressRule{
-					Hostname: domain,
+					Hostname: domain.Domain,
 					Service:  service,
 				}
 			} else {

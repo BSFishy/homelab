@@ -11,8 +11,8 @@ services:
     deploy:
       mode: global
       labels:
-        dev.mattprovost.domain: dozzle.home.mattprovost.dev
-        dev.mattprovost.port: 8080
+        dev.mattprovost.dozzle.domain: dozzle.home.mattprovost.dev
+        dev.mattprovost.dozzle.port: 8080
     networks:
       - cloudflared-network
     healthcheck:
