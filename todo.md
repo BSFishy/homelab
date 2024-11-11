@@ -13,6 +13,17 @@ adding this so i dont forget things
 - get us using some good volume stuff :D
 - ~fix volume mount permissions~
 - add ansible arg to take the network down
-- make portainer use ldap
+- ~make portainer use ldap~
+
+  - okay this is super fucking annoying but they neither
+
+    > 1. allow me to configure ldap using cli args
+    > 2. allow me to configure ldap using env vars
+    > 3. allow me to configure ldap using config files
+    > 4. allow me to disable auth
+
+    so i guess this is just not gonna happen unless i contribute anything like
+    this or wait until they just do it. so just whatever i guess i dont care
+
 - move to docker volumes instead of mounts or whatever
   - set up volumes to mount to a shared network drive?
