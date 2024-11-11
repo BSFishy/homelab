@@ -27,3 +27,4 @@ adding this so i dont forget things
 
 - move to docker volumes instead of mounts or whatever
   - set up volumes to mount to a shared network drive?
+- make all the docker composes style consistent
