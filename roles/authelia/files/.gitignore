@@ -1,0 +1,8 @@
+# password persistence
+/credentials
+
+# notifications file
+/config/notification.txt
+
+# keep all gitkeep files
+!**/.gitkeep

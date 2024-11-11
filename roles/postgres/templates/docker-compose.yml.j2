@@ -1,0 +1,34 @@
+# TODO: do i want to make this not a template?
+
+services:
+  postgres:
+    image: postgres:alpine
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres-password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - "{{ role_path }}/files/init.d:/docker-entrypoint-initdb.d"
+      - type: tmpfs
+        target: /dev/shm
+        tmpfs:
+          size: 134217728 # 128*2^20 bytes = 128Mb
+    networks:
+      - postgres
+    secrets:
+      - postgres-password
+    ports:
+      - "5432"
+    restart: unless-stopped
+
+networks:
+  postgres:
+    external: true
+
+volumes:
+  pgdata:
+
+secrets:
+  postgres-password:
+    external: true

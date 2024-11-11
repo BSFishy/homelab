@@ -1,14 +1,3 @@
-- name: Create a temporary file for Docker Compose
-  tempfile:
-    state: file
-    suffix: ".yml"
-  register: temp_compose_file
-
-- name: Render Docker Compose file from template
-  template:
-    src: docker-compose.yml.j2
-    dest: "{{ temp_compose_file.path }}"
-
 - name: Get info on cloudflared network
   community.docker.docker_network_info:
     name: cloudflared-network
@@ -29,10 +18,7 @@
     state: present
     name: cloudflared
     compose:
-      - "{{ temp_compose_file.path }}"
+      - "{{ cloudflared_compose }}"
     prune: true
-
-- name: Remove the temporary Docker Compose file
-  file:
-    path: "{{ temp_compose_file.path }}"
-    state: absent
+  vars:
+    cloudflared_compose: "{{ lookup('template', role_path + '/templates/docker-compose.yml.j2') | from_yaml }}"

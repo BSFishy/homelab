@@ -1,0 +1,27 @@
+services:
+  redis:
+    image: redis:alpine
+    command:
+      [
+        "sh",
+        "-c",
+        "redis-server --requirepass $$(cat /run/secrets/redis-password)",
+      ]
+    user: "{{ ansible_user_uid }}:{{ ansible_user_gid }}"
+    volumes:
+      - "{{ role_path }}/files/data:/data"
+    networks:
+      - redis
+    ports:
+      - "6379"
+    secrets:
+      - redis-password
+    restart: unless-stopped
+
+networks:
+  redis:
+    external: true
+
+secrets:
+  redis-password:
+    external: true

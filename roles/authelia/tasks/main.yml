@@ -1,0 +1,30 @@
+- name: Create authelia storage encryption key secret
+  community.docker.docker_secret:
+    name: authelia-encryption-key
+    data: "{{ lookup('ansible.builtin.password', role_path + '/files/credentials/encryption-key.txt', length=32) | b64encode }}"
+    data_is_b64: true
+    state: present
+
+- name: Create authelia session secret
+  community.docker.docker_secret:
+    name: authelia-session-secret
+    data: "{{ lookup('ansible.builtin.password', role_path + '/files/credentials/session-secret.txt', length=32) | b64encode }}"
+    data_is_b64: true
+    state: present
+
+- name: Create authelia jwt secret
+  community.docker.docker_secret:
+    name: authelia-jwt-secret
+    data: "{{ lookup('ansible.builtin.password', role_path + '/files/credentials/jwt-secret.txt', length=32) | b64encode }}"
+    data_is_b64: true
+    state: present
+
+- name: Deploy authelia stack
+  docker_stack:
+    state: present
+    name: authelia
+    compose:
+      - "{{ authelia_compose }}"
+    prune: true
+  vars:
+    authelia_compose: "{{ lookup('template', role_path + '/templates/docker-compose.yml.j2') | from_yaml }}"

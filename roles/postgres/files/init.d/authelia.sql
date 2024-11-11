@@ -1,0 +1,2 @@
+CREATE DATABASE authelia;
+GRANT ALL PRIVILEGES ON DATABASE authelia TO admin;

@@ -1,0 +1,58 @@
+services:
+  authelia:
+    image: "docker.io/authelia/authelia:latest"
+    restart: "unless-stopped"
+    networks:
+      - cloudflared-network
+      - openldap
+      - redis
+      - postgres
+    ports:
+      - 9091
+    deploy:
+      mode: global
+      labels:
+        dev.mattprovost.authelia.domain: auth.home.mattprovost.dev
+        dev.mattprovost.authelia.port: 9091
+    secrets:
+      - redis-password
+      - authelia-encryption-key
+      - authelia-session-secret
+      - authelia-jwt-secret
+      - postgres-password
+      - openldap-password
+    environment:
+      PUID: "{{ ansible_user_uid }}"
+      PGID: "{{ ansible_user_gid }}"
+      AUTHELIA_SESSION_SECRET_FILE: "/run/secrets/authelia-session-secret"
+      AUTHELIA_SESSION_REDIS_PASSWORD_FILE: "/run/secrets/redis-password"
+      AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE: "/run/secrets/authelia-encryption-key"
+      AUTHELIA_STORAGE_POSTGRES_PASSWORD_FILE: "/run/secrets/postgres-password"
+      AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET_FILE: "/run/secrets/authelia-jwt-secret"
+      AUTHELIA_AUTHENTICATION_BACKEND_LDAP_PASSWORD_FILE: "/run/secrets/openldap-password"
+    volumes:
+      - "{{ role_path }}/files/config:/config"
+
+networks:
+  cloudflared-network:
+    external: true
+  openldap:
+    external: true
+  postgres:
+    external: true
+  redis:
+    external: true
+
+secrets:
+  redis-password:
+    external: true
+  authelia-encryption-key:
+    external: true
+  authelia-session-secret:
+    external: true
+  authelia-jwt-secret:
+    external: true
+  postgres-password:
+    external: true
+  openldap-password:
+    external: true

@@ -1,0 +1,31 @@
+- name: Get info on openldap network
+  community.docker.docker_network_info:
+    name: openldap
+  register: openldap_network
+
+- name: Create openldap network
+  community.docker.docker_network:
+    name: openldap
+    driver: overlay
+    scope: swarm
+    attachable: true
+    appends: true
+    enable_ipv6: true
+  when: not openldap_network.exists
+
+- name: Create openldap password secret
+  community.docker.docker_secret:
+    name: openldap-password
+    data: "{{ lookup('ansible.builtin.password', role_path + '/files/credentials/password.txt', length=32) | b64encode }}"
+    data_is_b64: true
+    state: present
+
+- name: Deploy openldap stack
+  docker_stack:
+    state: present
+    name: openldap
+    compose:
+      - "{{ ldap_compose }}"
+    prune: true
+  vars:
+    ldap_compose: "{{ lookup('template', role_path + '/templates/docker-compose.yml.j2') | from_yaml }}"
