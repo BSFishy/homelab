@@ -24,7 +24,11 @@
   gather_facts: true
   roles:
     - registry
+    - postgres
+    - redis
     - cloudflared
     - cfzt-sync
+    - openldap
+    - authelia
     - portainer
     - dozzle

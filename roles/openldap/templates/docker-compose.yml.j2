@@ -1,0 +1,56 @@
+services:
+  openldap:
+    # TODO: move this to bitnami image?
+    image: osixia/openldap:latest
+    environment:
+      - LDAP_ORGANISATION=Matts Homelab
+      - LDAP_DOMAIN=mattprovost.dev
+      - LDAP_ADMIN_PASSWORD_FILE=/run/secrets/openldap-password
+      - LDAP_TLS=false
+      - "LDAP_OPENLDAP_UID={{ ansible_user_uid }}"
+      - "LDAP_OPENLDAP_GID={{ ansible_user_gid }}"
+    volumes:
+      - "{{ role_path }}/files/database:/var/lib/ldap"
+      - "{{ role_path }}/files/config:/etc/ldap/slapd.d"
+    networks:
+      - openldap
+    secrets:
+      - openldap-password
+    ports:
+      - "389"
+      - "636"
+    restart: unless-stopped
+
+  lum:
+    image: wheelybird/ldap-user-manager:latest
+    environment:
+      - LDAP_URI=openldap_openldap
+      - LDAP_BASE_DN=dc=mattprovost,dc=dev
+      - LDAP_ADMIN_BIND_DN=CN=admin,DC=mattprovost,DC=dev
+      - LDAP_ADMIN_BIND_PWD_FILE=/run/secrets/openldap-password
+      - LDAP_ADMINS_GROUP=admins
+      - LDAP_USER_OU=users
+      - NO_HTTPS=true
+    networks:
+      - openldap
+      - cloudflared-network
+    secrets:
+      - openldap-password
+    ports:
+      - 80
+    deploy:
+      labels:
+        dev.mattprovost.lum.domain: ldap.home.mattprovost.dev
+        dev.mattprovost.lum.port: 80
+        dev.mattprovost.lum.access: "true"
+    restart: unless-stopped
+
+networks:
+  openldap:
+    external: true
+  cloudflared-network:
+    external: true
+
+secrets:
+  openldap-password:
+    external: true
