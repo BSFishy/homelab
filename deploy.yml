@@ -29,6 +29,6 @@
     - cloudflared
     - openldap
     - authelia
-    - cfzt-sync
+    - manager
     - portainer
     - dozzle

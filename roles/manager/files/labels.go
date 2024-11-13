@@ -9,8 +9,8 @@ import (
 type DomainInfo struct {
 	Name         string
 	Domain       string
-	Port         uint32
 	Protocol     string
+	Port         uint32
 	Access       bool
 	AccessCustom bool
 }

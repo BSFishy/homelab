@@ -1,0 +1,14 @@
+services:
+  manager:
+    image: "{{ image }}:latest"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - "CLOUDFLARE_API_EMAIL={{ lookup('ansible.builtin.env', 'CLOUDFLARE_API_EMAIL') }}"
+      # TODO: make this a secret
+      - "CLOUDFLARE_API_KEY={{ lookup('ansible.builtin.env', 'CLOUDFLARE_API_KEY') }}"
+      - "CLOUDFLARE_ACCOUNT_ID={{ lookup('ansible.builtin.env', 'CLOUDFLARE_ACCOUNT_ID') }}"
+      - "CLOUDFLARE_TUNNEL_ID={{ cloudflare_tunnel.tunnel_id }}"
+      - "CLOUDFLARE_GROUP_ID={{ lookup('ansible.builtin.env', 'CLOUDFLARE_GROUP_ID') }}"
+      - "CLOUDFLARE_ZONE_ID={{ zone }}"
+      - "CLOUDFLARE_IDP_ID={{ authelia_idp_id }}"
