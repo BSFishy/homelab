@@ -14,5 +14,6 @@
       - jsondiff
       - pyyaml
       - cloudflare
+      - cryptography
     state: present
     extra_args: --break-system-packages

@@ -2,7 +2,7 @@
 /credentials
 
 # notifications file
-/config/notification.txt
+/config/*
 
 # keep all gitkeep files
 !**/.gitkeep

@@ -27,8 +27,8 @@
     - postgres
     - redis
     - cloudflared
-    - cfzt-sync
     - openldap
     - authelia
+    - cfzt-sync
     - portainer
     - dozzle

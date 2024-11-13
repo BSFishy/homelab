@@ -19,6 +19,34 @@
     data_is_b64: true
     state: present
 
+- name: Create authelia client secret
+  set_fact:
+    authelia_client_secret: "{{ lookup('ansible.builtin.password', role_path + '/files/credentials/client_secret.txt', length=32, chars=['ascii_letters']) }}"
+
+- name: Create authelia client secret docker secret
+  community.docker.docker_secret:
+    name: authelia_client_secret
+    data: "{{ authelia_client_secret | b64encode }}"
+    data_is_b64: true
+    state: present
+
+- name: Generate RSA key for authelia
+  community.crypto.openssl_privatekey:
+    path: "{{ role_path + '/files/credentials/private_key.pem' }}"
+    size: 2048
+    type: RSA
+  environment:
+    # NOTE: i need this since otherwise the cryptography installed from the nix
+    # dev env is used, which is broken for some reason. resetting this variable
+    # forces python to use the cryptography package that is globally installed,
+    # which should work fine.
+    PYTHONPATH: ""
+
+- name: Create configuration file from a template
+  ansible.builtin.template:
+    src: configuration.yml.j2
+    dest: "{{ role_path + '/files/config/configuration.yml' }}"
+
 - name: Deploy authelia stack
   docker_stack:
     state: present
@@ -28,3 +56,13 @@
     prune: true
   vars:
     authelia_compose: "{{ lookup('template', role_path + '/templates/docker-compose.yml.j2') | from_yaml }}"
+
+- name: Create Authelia IDP in Cloudflare
+  cloudflare_idp:
+    state: present
+    api_email: "{{ lookup('ansible.builtin.env', 'CLOUDFLARE_API_EMAIL') }}"
+    api_key: "{{ lookup('ansible.builtin.env', 'CLOUDFLARE_API_KEY') }}"
+    account_id: "{{ lookup('ansible.builtin.env', 'CLOUDFLARE_ACCOUNT_ID') }}"
+    client_secret: "{{ authelia_client_secret }}"
+    name: Authelia
+  register: cloudflare_idp

@@ -20,6 +20,7 @@
               pkgs.go
               pkgs.ansible
               pkgs.python312Packages.docker
+              pkgs.python312Packages.cloudflare
             ];
           };
         };
