@@ -9,7 +9,7 @@ def main():
         api_key=dict(type="str", required=True, no_log=True),
         api_email=dict(type="str", required=True, no_log=True),
         account_id=dict(type="str", required=True),
-        tunnel_secret=dict(type="str", required=True, no_log=True),
+        client_secret=dict(type="str", required=True, no_log=True),
         name=dict(type="str", required=True),
         state=dict(type="str", default="present", choices=["present", "absent"]),
     )
@@ -19,7 +19,7 @@ def main():
     api_key = module.params["api_key"]
     api_email = module.params["api_email"]
     account_id = module.params["account_id"]
-    tunnel_secret = module.params["tunnel_secret"]
+    client_secret = module.params["client_secret"]
     name = module.params["name"]
     state = module.params["state"]
 
@@ -28,17 +28,29 @@ def main():
         api_email=api_email,
     )
 
-    tunnels = client.zero_trust.tunnels.list(account_id=account_id)
-    tunnel = None
-    for tun in tunnels:
-        if tun.deleted_at is None and tun.name == name:
-            tunnel = tun
+    idps = client.zero_trust.identity_providers.list(
+        account_id=account_id,
+    )
+    idp = None
+    for i in idps:
+        if i.name == name:
+            idp = i
 
     if state == "present":
         result = dict()
-        if tunnel is None:
-            tunnel = client.zero_trust.tunnels.create(
-                account_id=account_id, name=name, tunnel_secret=tunnel_secret
+        if idp is None:
+            idp = client.zero_trust.identity_providers.create(
+                account_id=account_id,
+                name=name,
+                type="oidc",
+                config=dict(
+                    client_id="cloudflare",
+                    client_secret=client_secret,
+                    auth_url="https://auth.home.mattprovost.dev/api/oidc/authorization",
+                    token_url="https://auth.home.mattprovost.dev/api/oidc/token",
+                    certs_url="https://auth.home.mattprovost.dev/jwks.json",
+                    claims=["preferred_username", "mail"],
+                ),
             )
 
             result["changed"] = True
@@ -47,17 +59,16 @@ def main():
             result["changed"] = False
             result["msg"] = "Tunnel already existed"
 
-        token = client.zero_trust.tunnels.token.get(tunnel.id, account_id=account_id)
-
-        result["tunnel_id"] = tunnel.id
-        result["tunnel_token"] = token
-
+        result["idp_id"] = idp.id
         module.exit_json(**result)
     else:
-        if tunnel is None:
+        if idp is None:
             module.exit_json(changed=False, msg="Tunnel does not exist")
         else:
-            client.zero_trust.tunnels.delete(tunnel.id, account_id=account_id)
+            client.zero_trust.identity_providers.delete(
+                idp.id,
+                account_id=account_id,
+            )
 
             module.exit_json(changed=True, msg="Tunnel was deleted")
 

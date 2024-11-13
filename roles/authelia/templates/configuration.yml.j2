@@ -39,6 +39,28 @@ storage:
     database: authelia
     username: admin
 
+identity_providers:
+  oidc:
+    jwks:
+      - key_id: "primary"
+        algorithm: "RS256"
+        use: "sig"
+        key: "{{ lookup('ansible.builtin.file', role_path + '/files/credentials/private_key.pem').replace('\n', '\\n') }}"
+    clients:
+      - client_id: "cloudflare"
+        client_name: "Cloudflare ZeroTrust"
+        client_secret: "{{ authelia_client_secret | password_hash }}"
+        public: false
+        authorization_policy: "one_factor"
+        redirect_uris:
+          # TODO: make this configurable lol
+          - "https://mattprovost.cloudflareaccess.com/cdn-cgi/access/callback"
+        scopes:
+          - "openid"
+          - "profile"
+          - "email"
+        userinfo_signed_response_alg: "none"
+
 notifier:
   disable_startup_check: false
   filesystem:
