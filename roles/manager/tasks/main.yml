@@ -7,13 +7,13 @@
       - push: true
         type: image
 
-- name: Deploy cfzt-sync stack
-  docker_stack:
+- name: Deploy manager stack
+  community.docker.docker_stack:
     state: present
-    name: cfzt-sync
+    name: homelab_manager
     compose:
-      - "{{ cfzt_compose }}"
+      - "{{ manager_compose }}"
     prune: true
     resolve_image: always
   vars:
-    cfzt_compose: "{{ lookup('template', role_path + '/templates/docker-compose.yml.j2') | from_yaml }}"
+    manager_compose: "{{ lookup('template', role_path + '/templates/docker-compose.yml.j2') | from_yaml }}"

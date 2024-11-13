@@ -67,6 +67,8 @@ func main() {
 		}
 	}()
 
+	fmt.Println("Started! Waiting to die...")
+
 	<-done
 }
 
