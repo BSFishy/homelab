@@ -67,3 +67,7 @@
     client_secret: "{{ authelia_client_secret }}"
     name: Authelia
   register: cloudflare_idp
+
+- name: Set Authelia IDP fact
+  set_fact:
+    authelia_idp_id: "{{ cloudflare_idp.idp_id }}"

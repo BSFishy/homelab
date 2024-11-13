@@ -13,6 +13,7 @@ services:
       - CLOUDFLARE_TUNNEL_ID={{ cloudflare_tunnel.tunnel_id }}
       - CLOUDFLARE_GROUP_ID={{ lookup('ansible.builtin.env', 'CLOUDFLARE_GROUP_ID') }}
       - CLOUDFLARE_ZONE_ID={{ zone }}
+      - CLOUDFLARE_IDP_ID={{ authelia_idp_id }}
 
 networks:
   cfzt-sync-network:
