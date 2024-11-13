@@ -42,13 +42,14 @@
     # which should work fine.
     PYTHONPATH: ""
 
+# TODO: this seems to be changing every run. fix that.
 - name: Create configuration file from a template
   ansible.builtin.template:
     src: configuration.yml.j2
     dest: "{{ role_path + '/files/config/configuration.yml' }}"
 
 - name: Deploy authelia stack
-  docker_stack:
+  community.docker.docker_stack:
     state: present
     name: authelia
     compose:
