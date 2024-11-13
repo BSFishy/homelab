@@ -22,6 +22,7 @@ var (
 	account   = cloudflare.AccountIdentifier(os.Getenv("CLOUDFLARE_ACCOUNT_ID"))
 	tunnel_id = os.Getenv("CLOUDFLARE_TUNNEL_ID")
 	group_id  = os.Getenv("CLOUDFLARE_GROUP_ID")
+	idp_id    = os.Getenv("CLOUDFLARE_IDP_ID")
 )
 
 func main() {
@@ -297,8 +298,17 @@ func syncServices(cli *client.Client, api *cloudflare.API) error {
 		}
 
 		t := true
+		allowedIdps := []string{idp_id}
+		autoRedirect := &t
+		if domain.AccessCustom {
+			allowedIdps = []string{}
+			autoRedirect = nil
+		}
+
 		a, err := api.CreateAccessApplication(ctx, account, cloudflare.CreateAccessApplicationParams{
 			AllowAuthenticateViaWarp: &t,
+			AllowedIdps:              allowedIdps,
+			AutoRedirectToIdentity:   autoRedirect,
 			Domain:                   domain.Domain,
 			Name:                     domain.Name,
 			Type:                     cloudflare.SelfHosted,

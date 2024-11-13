@@ -7,11 +7,12 @@ import (
 )
 
 type DomainInfo struct {
-	Name     string
-	Domain   string
-	Port     uint32
-	Protocol string
-	Access   bool
+	Name         string
+	Domain       string
+	Port         uint32
+	Protocol     string
+	Access       bool
+	AccessCustom bool
 }
 
 func extractDomainInfo(labels map[string]string) []DomainInfo {
@@ -54,11 +55,12 @@ func extractDomainInfo(labels map[string]string) []DomainInfo {
 		}
 
 		domains = append(domains, DomainInfo{
-			Name:     serviceName,
-			Domain:   serviceInfo["domain"],
-			Port:     uint32(port),
-			Protocol: protocol,
-			Access:   serviceInfo["access"] == "true",
+			Name:         serviceName,
+			Domain:       serviceInfo["domain"],
+			Port:         uint32(port),
+			Protocol:     protocol,
+			Access:       serviceInfo["access"] == "true",
+			AccessCustom: serviceInfo["access.custom"] == "true",
 		})
 	}
 

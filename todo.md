@@ -28,3 +28,9 @@ adding this so i dont forget things
 - move to docker volumes instead of mounts or whatever
   - set up volumes to mount to a shared network drive?
 - make all the docker composes style consistent
+- fix cfzt-sync to match on settings and delete what doesnt match instead of
+  matching on names
+- improve config experience
+  - we could definitely make it so that we specify the api key/email or api
+    token then it lets you select from the list of everything else to make the
+    configuration experience WAYYYY better
