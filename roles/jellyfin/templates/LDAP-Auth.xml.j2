@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PluginConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <LdapServer>openldap_openldap</LdapServer>
+  <LdapPort>389</LdapPort>
+  <UseSsl>false</UseSsl>
+  <UseStartTls>false</UseStartTls>
+  <SkipSslVerify>false</SkipSslVerify>
+  <LdapBindUser>CN=admin,DC=mattprovost,DC=dev</LdapBindUser>
+  <LdapBindPassword>{{ openldap_password }}</LdapBindPassword>
+  <LdapBaseDn>dc=mattprovost,dc=dev</LdapBaseDn>
+  <LdapSearchFilter>(objectClass=person)</LdapSearchFilter>
+  <LdapAdminBaseDn>cn=admins,ou=groups,dc=mattprovost,dc=dev</LdapAdminBaseDn>
+  <LdapAdminFilter>(memberUid={username})</LdapAdminFilter>
+  <EnableLdapAdminFilterMemberUid>true</EnableLdapAdminFilterMemberUid>
+  <LdapSearchAttributes>uid, cn, mail, displayName</LdapSearchAttributes>
+  <LdapClientCertPath />
+  <LdapClientKeyPath />
+  <LdapRootCaPath />
+  <CreateUsersFromLdap>true</CreateUsersFromLdap>
+  <AllowPassChange>false</AllowPassChange>
+  <LdapUidAttribute>uid</LdapUidAttribute>
+  <LdapUsernameAttribute>uid</LdapUsernameAttribute>
+  <LdapPasswordAttribute>userPassword</LdapPasswordAttribute>
+  <EnableLdapProfileImageSync>false</EnableLdapProfileImageSync>
+  <LdapProfileImageAttribute>jpegphoto</LdapProfileImageAttribute>
+  <EnableAllFolders>false</EnableAllFolders>
+  <EnabledFolders />
+</PluginConfiguration>

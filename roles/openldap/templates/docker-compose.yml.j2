@@ -46,6 +46,26 @@ services:
         dev.mattprovost.lum.access.custom: "true"
     restart: unless-stopped
 
+  pla:
+    image: osixia/phpldapadmin:latest
+    environment:
+      - PHPLDAPADMIN_LDAP_HOSTS=openldap_openldap
+      - PHPLDAPADMIN_HTTPS=false
+      - PHPLDAPADMIN_LDAP_CLIENT_TLS=false
+    networks:
+      - openldap
+      - cloudflared-network
+    secrets:
+      - openldap-password
+    ports:
+      - 80
+    deploy:
+      labels:
+        dev.mattprovost.pla.domain: pla.home.mattprovost.dev
+        dev.mattprovost.pla.port: 80
+        dev.mattprovost.pla.access: "true"
+        dev.mattprovost.pla.access.custom: "true"
+
 networks:
   openldap:
     external: true

@@ -1,0 +1,33 @@
+services:
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin:latest
+    environment:
+      - "PUID={{ ansible_user_uid }}"
+      - "PGID={{ ansible_user_gid }}"
+      - "TZ=America/Chicago"
+    volumes:
+      - "{{ role_path }}/files/config:/config"
+      - cache:/cache
+      # TODO: media volume?
+      - media:/media
+    networks:
+      - cloudflared-network
+      - openldap
+    ports:
+      - 8096
+      - 1900:1900/udp
+      - 7359:7359/udp
+    deploy:
+      labels:
+        dev.mattprovost.jellyfin.domain: jellyfin.home.mattprovost.dev
+        dev.mattprovost.jellyfin.port: 8096
+
+networks:
+  cloudflared-network:
+    external: true
+  openldap:
+    external: true
+
+volumes:
+  cache:
+  media:
