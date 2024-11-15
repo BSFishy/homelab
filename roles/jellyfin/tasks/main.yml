@@ -10,7 +10,7 @@
     dest: "{{ role_path + '/files/config/data/plugins/ldapauth/' }}"
     remote_src: true
     mode: "0755"
-    creates: "{{ role_path + '/files/download/ldapauth_zip' }}"
+    creates: "{{ role_path + '/files/config/data/plugins/ldapauth/LDAP-Auth.dll' }}"
 
 - name: Create ldap config file
   ansible.builtin.template:
