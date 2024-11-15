@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/ansible/schemas/main/f/ansible.json
+
 - name: Configure Cloudflare Zero Trust
   hosts: localhost
   gather_facts: false
@@ -32,3 +34,4 @@
     - manager
     - portainer
     - dozzle
+    - jellyfin
