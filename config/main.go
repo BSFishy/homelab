@@ -37,10 +37,12 @@ func GenerateRandomStringBase64(n int) (string, error) {
 
 func main() {
 	var (
-		api_email  string
-		api_key    string
-		account_id string
-		group_id   string
+		api_email    string
+		api_key      string
+		account_id   string
+		group_id     string
+		pia_username string
+		pia_password string
 	)
 
 	form := huh.NewForm(
@@ -49,6 +51,8 @@ func main() {
 			huh.NewInput().Title("What is your Cloudflare API Key").EchoMode(huh.EchoModePassword).Value(&api_key),
 			huh.NewInput().Title("What is your Cloudflare Account ID?").Value(&account_id),
 			huh.NewInput().Title("What is your Cloudflare Access group ID?").Value(&group_id),
+			huh.NewInput().Title("What is your PIA username?").Value(&pia_username),
+			huh.NewInput().Title("What is your PIA password?").EchoMode(huh.EchoModePassword).Value(&pia_password),
 		),
 	)
 
@@ -68,6 +72,8 @@ func main() {
 		"CLOUDFLARE_ACCOUNT_ID":    account_id,
 		"CLOUDFLARE_TUNNEL_SECRET": tunnel_secret,
 		"CLOUDFLARE_GROUP_ID":      group_id,
+		"PIA_USERNAME":             pia_username,
+		"PIA_PASSWORD":             pia_password,
 	}
 
 	var env string

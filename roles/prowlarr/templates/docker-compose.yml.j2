@@ -1,33 +1,33 @@
 services:
-  jellyfin:
-    image: lscr.io/linuxserver/jellyfin:latest
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
     environment:
       - "PUID={{ ansible_user_uid }}"
       - "PGID={{ ansible_user_gid }}"
       - "TZ=America/Chicago"
     volumes:
       - "{{ role_path }}/files/config:/config"
-      - cache:/cache
       - "media-server:/data"
     networks:
       - cloudflared-network
-      - openldap
+      - prowlarr-network
+      - transmission-network
     ports:
-      - 8096
-      - 1900:1900/udp
-      - 7359:7359/udp
+      - 9696
     deploy:
       labels:
-        dev.mattprovost.jellyfin.domain: jellyfin.home.mattprovost.dev
-        dev.mattprovost.jellyfin.port: 8096
+        dev.mattprovost.prowlarr.domain: prowlarr.home.mattprovost.dev
+        dev.mattprovost.prowlarr.port: 9696
+        dev.mattprovost.prowlarr.prowlarr: "true"
 
 networks:
   cloudflared-network:
     external: true
-  openldap:
+  prowlarr-network:
+    external: true
+  transmission-network:
     external: true
 
 volumes:
-  cache:
   media-server:
     external: true

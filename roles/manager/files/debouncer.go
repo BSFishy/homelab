@@ -4,27 +4,22 @@ import (
 	"fmt"
 	"log"
 	"time"
-
-	"github.com/cloudflare/cloudflare-go"
-	"github.com/docker/docker/client"
 )
 
 // Debouncer struct holds the debounce logic
 type Debouncer struct {
 	timer    *time.Timer
 	eventCh  chan interface{}
-	cli      *client.Client
-	api      *cloudflare.API
+	m        *manager
 	interval time.Duration
 }
 
 // NewDebouncer initializes and returns a Debouncer
-func NewDebouncer(client *client.Client, api *cloudflare.API, interval time.Duration) *Debouncer {
+func NewDebouncer(m *manager, interval time.Duration) *Debouncer {
 	d := &Debouncer{
 		interval: interval,
 		eventCh:  make(chan interface{}, 1),
-		cli:      client,
-		api:      api,
+		m:        m,
 	}
 	go d.start()
 	return d
@@ -43,7 +38,7 @@ func (d *Debouncer) start() {
 // execute is the function to be debounced
 func (d *Debouncer) execute() {
 	fmt.Println("Function executed at", time.Now())
-	if err := syncServices(d.cli, d.api); err != nil {
+	if err := syncServices(d.m); err != nil {
 		log.Printf("error syncing services: %s", err)
 	}
 }

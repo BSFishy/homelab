@@ -20,7 +20,7 @@
     state: present
 
 - name: Create authelia client secret
-  set_fact:
+  ansible.builtin.set_fact:
     authelia_client_secret: "{{ lookup('ansible.builtin.password', role_path + '/files/credentials/client_secret.txt', length=32, chars=['ascii_letters']) }}"
 
 - name: Create authelia client secret docker secret
@@ -47,6 +47,7 @@
   ansible.builtin.template:
     src: configuration.yml.j2
     dest: "{{ role_path + '/files/config/configuration.yml' }}"
+    mode: "0644"
 
 - name: Deploy authelia stack
   community.docker.docker_stack:
@@ -69,5 +70,5 @@
   register: cloudflare_idp
 
 - name: Set Authelia IDP fact
-  set_fact:
+  ansible.builtin.set_fact:
     authelia_idp_id: "{{ cloudflare_idp.idp_id }}"

@@ -1,0 +1,19 @@
+- name: Create sonarr api key
+  ansible.builtin.set_fact:
+    sonarr_api_key: "{{ lookup('ansible.builtin.password', role_path + '/files/credentials/api_key.txt', length=32, chars=['ascii_letters']) }}"
+
+- name: Create config file
+  ansible.builtin.template:
+    src: config.xml.j2
+    dest: "{{ role_path + '/files/config/config.xml' }}"
+    mode: "0644"
+
+- name: Deploy sonarr stack
+  community.docker.docker_stack:
+    state: present
+    name: sonarr
+    compose:
+      - "{{ sonarr_compose }}"
+    prune: true
+  vars:
+    sonarr_compose: "{{ lookup('template', role_path + '/templates/docker-compose.yml.j2') | from_yaml }}"

@@ -3,6 +3,8 @@ services:
     image: "{{ image }}:latest"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - cloudflared-network
     environment:
       - "CLOUDFLARE_API_EMAIL={{ lookup('ansible.builtin.env', 'CLOUDFLARE_API_EMAIL') }}"
       # TODO: make this a secret
@@ -12,3 +14,9 @@ services:
       - "CLOUDFLARE_GROUP_ID={{ lookup('ansible.builtin.env', 'CLOUDFLARE_GROUP_ID') }}"
       - "CLOUDFLARE_ZONE_ID={{ zone }}"
       - "CLOUDFLARE_IDP_ID={{ authelia_idp_id }}"
+      - "STARR_API_KEY_sonarr={{ sonarr_api_key }}"
+      - "STARR_API_KEY_prowlarr={{ prowlarr_api_key }}"
+
+networks:
+  cloudflared-network:
+    external: true

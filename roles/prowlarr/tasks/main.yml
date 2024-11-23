@@ -1,0 +1,34 @@
+- name: Get info on prowlarr network
+  community.docker.docker_network_info:
+    name: prowlarr-network
+  register: prowlarr_network
+
+- name: Create prowlarr network
+  community.docker.docker_network:
+    name: prowlarr-network
+    driver: overlay
+    scope: swarm
+    attachable: true
+    appends: true
+    enable_ipv6: true
+  when: not prowlarr_network.exists
+
+- name: Create prowlarr api key
+  ansible.builtin.set_fact:
+    prowlarr_api_key: "{{ lookup('ansible.builtin.password', role_path + '/files/credentials/api_key.txt', length=32, chars=['ascii_letters']) }}"
+
+- name: Create config file
+  ansible.builtin.template:
+    src: config.xml.j2
+    dest: "{{ role_path + '/files/config/config.xml' }}"
+    mode: "0644"
+
+- name: Deploy prowlarr stack
+  community.docker.docker_stack:
+    state: present
+    name: prowlarr
+    compose:
+      - "{{ prowlarr_compose }}"
+    prune: true
+  vars:
+    prowlarr_compose: "{{ lookup('template', role_path + '/templates/docker-compose.yml.j2') | from_yaml }}"
