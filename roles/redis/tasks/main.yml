@@ -21,7 +21,7 @@
     state: present
 
 - name: Deploy redis stack
-  docker_stack:
+  community.docker.docker_stack:
     state: present
     name: redis
     compose:

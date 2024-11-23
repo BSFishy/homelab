@@ -21,7 +21,7 @@
     state: present
 
 - name: Deploy postgres stack
-  docker_stack:
+  community.docker.docker_stack:
     state: present
     name: postgres
     compose:

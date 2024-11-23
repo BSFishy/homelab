@@ -1,0 +1,19 @@
+# TODO: make this a nfs volume on the nas
+- name: Create the media server volume
+  community.docker.docker_volume:
+    name: media-server
+
+- name: Initialize media-server volume with directory structure
+  community.docker.docker_container:
+    name: media_server_initializer
+    image: alpine:latest
+    command: "sh /run/script.sh"
+    env:
+      PUID: "{{ ansible_user_uid | string }}"
+      PGID: "{{ ansible_user_gid | string }}"
+    volumes:
+      - media-server:/data
+      - "{{ role_path }}/files/script.sh:/run/script.sh"
+    state: started
+    restart_policy: "no"
+    auto_remove: true

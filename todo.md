@@ -35,3 +35,4 @@ adding this so i dont forget things
     token then it lets you select from the list of everything else to make the
     configuration experience WAYYYY better
   - should also be able to use api tokens
+- configure \*arrs and jellyfin through apis in manager service

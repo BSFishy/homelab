@@ -3,6 +3,7 @@ module mattprovost.dev/homelab-manager
 go 1.22.5
 
 require (
+	github.com/BSFishy/starr v0.0.0-20241121043545-f30bd7426cd4 // indirect
 	github.com/Microsoft/go-winio v0.4.14 // indirect
 	github.com/cloudflare/cloudflare-go v0.109.0 // indirect
 	github.com/distribution/reference v0.6.0 // indirect

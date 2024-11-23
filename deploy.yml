@@ -25,13 +25,28 @@
   hosts: manager
   gather_facts: true
   roles:
+    # basic infrastructure
     - registry
     - postgres
     - redis
+
+    # remote access
     - cloudflared
+
+    # authentication
     - openldap
     - authelia
-    - manager
+
+    # general management
     - portainer
     - dozzle
+
+    # media server
+    - media-server
+    - transmission
+    - prowlarr
+    - sonarr
     - jellyfin
+
+    # manager
+    - manager

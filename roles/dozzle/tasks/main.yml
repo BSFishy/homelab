@@ -1,5 +1,5 @@
 - name: Deploy dozzle stack
-  docker_stack:
+  community.docker.docker_stack:
     state: present
     name: dozzle
     compose:

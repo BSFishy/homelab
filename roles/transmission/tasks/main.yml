@@ -1,0 +1,24 @@
+- name: Get info on transmission network
+  community.docker.docker_network_info:
+    name: transmission-network
+  register: transmission_network
+
+- name: Create transmission network
+  community.docker.docker_network:
+    name: transmission-network
+    driver: overlay
+    scope: swarm
+    attachable: true
+    appends: true
+    enable_ipv6: true
+  when: not transmission_network.exists
+
+- name: Deploy transmission stack
+  community.docker.docker_stack:
+    state: present
+    name: transmission
+    compose:
+      - "{{ transmission_compose }}"
+    prune: true
+  vars:
+    transmission_compose: "{{ lookup('template', role_path + '/templates/docker-compose.yml.j2') | from_yaml }}"

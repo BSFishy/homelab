@@ -1,3 +1,5 @@
+github.com/BSFishy/starr v0.0.0-20241121043545-f30bd7426cd4 h1:OI4KXiMjc+AwQJhQRVsLBy+cdgBm8Kecvf91zwUMY60=
+github.com/BSFishy/starr v0.0.0-20241121043545-f30bd7426cd4/go.mod h1:xgl+nkHxofA/Eg9T8QBlFe2zmlz+9mW6C+sCzFTUoLg=
 github.com/Microsoft/go-winio v0.4.14 h1:+hMXMk01us9KgxGb7ftKQt2Xpf5hH/yky+TDA+qxleU=
 github.com/Microsoft/go-winio v0.4.14/go.mod h1:qXqCSQ3Xa7+6tgxaGTIe4Kpcdsi+P8jBhyzoq1bpyYA=
 github.com/cloudflare/cloudflare-go v0.108.0 h1:C4Skfjd8I8X3uEOGmQUT4/iGyZcWdkIU7HwvMoLkEE0=

@@ -1,0 +1,40 @@
+services:
+  transmission:
+    image: haugene/transmission-openvpn:latest
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - OPENVPN_PROVIDER=PIA
+      - "OPENVPN_USERNAME={{ lookup('ansible.builtin.env', 'PIA_USERNAME') }}"
+      - "OPENVPN_PASSWORD={{ lookup('ansible.builtin.env', 'PIA_PASSWORD') }}"
+      - "PUID={{ ansible_user_uid }}"
+      - "PGID={{ ansible_user_gid }}"
+      - TZ=America/Chicago
+      - TRANSMISSION_DOWNLOAD_DIR=/data/torrents
+      - TRANSMISSION_INCOMPLETE_DIR_ENABLED=false
+    volumes:
+      - "{{ role_path }}/files/config:/config/transmission-home"
+      - "media-server:/data"
+    networks:
+      - cloudflared-network
+      - transmission-network
+    ports:
+      - 9091
+      - 51413:51413
+      - 51413:51413/udp
+    deploy:
+      labels:
+        dev.mattprovost.transmission.domain: transmission.home.mattprovost.dev
+        dev.mattprovost.transmission.port: 9091
+        dev.mattprovost.transmission.access: "true"
+        dev.mattprovost.transmission.transmission: "true"
+
+networks:
+  cloudflared-network:
+    external: true
+  transmission-network:
+    external: true
+
+volumes:
+  media-server:
+    external: true

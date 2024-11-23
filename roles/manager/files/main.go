@@ -6,16 +6,12 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/signal"
 	"slices"
-	"syscall"
-	"time"
 
+	"github.com/BSFishy/starr/prowlarr"
+	"github.com/BSFishy/starr/sonarr"
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/events"
-	"github.com/docker/docker/api/types/swarm"
-	"github.com/docker/docker/client"
 )
 
 var (
@@ -27,83 +23,38 @@ var (
 )
 
 func main() {
-	ctx := context.Background()
+	// Create the manager
+	manager := NewManager()
+	defer manager.Close()
 
-	done := make(chan os.Signal, 1)
-	signal.Notify(done, syscall.SIGINT, syscall.SIGTERM)
-
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		log.Fatalf("error creating Docker client: %v", err)
-	}
-	defer cli.Close()
-
-	api, err := cloudflare.New(os.Getenv("CLOUDFLARE_API_KEY"), os.Getenv("CLOUDFLARE_API_EMAIL"))
+	// Grab the zone ID from the env var
+	zone_id, err := manager.api.ZoneIDByName(os.Getenv("CLOUDFLARE_ZONE"))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	zone_id, err := api.ZoneIDByName(os.Getenv("CLOUDFLARE_ZONE"))
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	// Grab the SDK identifier from the zone id
 	zone = cloudflare.ZoneIdentifier(zone_id)
 
-	debouncer := NewDebouncer(cli, api, 5*time.Second)
-	debouncer.Trigger()
+	// Register background loops to do work
+	manager.RegisterLoops()
 
-	messages, errs := cli.Events(ctx, events.ListOptions{})
-
-	go func() {
-		for {
-			select {
-			case event := <-messages:
-				if event.Type == "service" {
-					debouncer.Trigger()
-				}
-			case err := <-errs:
-				fmt.Println("Error:", err)
-			}
-		}
-	}()
-
-	fmt.Println("Started! Waiting to die...")
-
-	<-done
+	// Handle graceful shutdowns
+	manager.GracefulShutdown()
 }
 
-func getService(ctx context.Context, cli *client.Client, name string) (*swarm.Service, error) {
-	services, err := cli.ServiceList(ctx, types.ServiceListOptions{})
-	if err != nil {
-		return nil, err
-	}
-
-	for _, service := range services {
-		if service.Spec.Name == name {
-			return &service, nil
-		}
-	}
-
-	return nil, fmt.Errorf("no service named %s", name)
-}
-
-type ruleInfo struct {
-	ingressRule *cloudflare.UnvalidatedIngressRule
-	DomainInfo
-}
-
-func syncServices(cli *client.Client, api *cloudflare.API) error {
+func syncServices(m *manager) error {
 	ctx := context.Background()
 
 	// get dockerServices as source of truth for configuration
-	dockerServices, err := cli.ServiceList(ctx, types.ServiceListOptions{})
+	dockerServices, err := m.cli.ServiceList(ctx, types.ServiceListOptions{})
 	if err != nil {
 		return err
 	}
 
 	// first we extract ingress rules from the list of services
 	var services []Service
+	var ss starrs
 	for _, svc := range dockerServices {
 		serviceName := svc.Spec.Name
 		labels := svc.Spec.Labels
@@ -111,8 +62,36 @@ func syncServices(cli *client.Client, api *cloudflare.API) error {
 		domainInfo := extractDomainInfo(labels)
 		for _, domain := range domainInfo {
 			services = append(services, NewService(serviceName, domain))
+
+			r := arr{
+				Name: domain.Name,
+				Host: serviceName,
+				Port: domain.Port,
+			}
+
+			if domain.Transmission {
+				ss.transmissions = append(ss.transmissions, r)
+			}
+
+			if domain.Sonarr {
+				ss.sonarrs = append(ss.sonarrs, sonarrrr{
+					Sonarr: sonarr.New(NewStarr(serviceName, domain)),
+					arr:    r,
+				})
+			}
+
+			if domain.Prowlarr {
+				ss.prowlarrs = append(ss.prowlarrs, prowlarrrr{
+					Prowlarr: prowlarr.New(NewStarr(serviceName, domain)),
+					arr:      r,
+				})
+			}
 		}
 	}
+
+	// update the starrs and sync them together
+	m.ss = ss
+	go m.starrServiceIteration()
 
 	// sort the services by name for consistency
 	slices.SortFunc(services, func(a, b Service) int {
@@ -120,19 +99,19 @@ func syncServices(cli *client.Client, api *cloudflare.API) error {
 	})
 
 	// grab the current configuration to do an incremental update
-	tunnelConfig, err := api.GetTunnelConfiguration(ctx, account, tunnel_id)
+	tunnelConfig, err := m.api.GetTunnelConfiguration(ctx, account, tunnel_id)
 	if err != nil {
 		return err
 	}
 
 	// get dns records to incrementally update
-	cfZones, _, err := api.ListDNSRecords(ctx, zone, cloudflare.ListDNSRecordsParams{})
+	cfZones, _, err := m.api.ListDNSRecords(ctx, zone, cloudflare.ListDNSRecordsParams{})
 	if err != nil {
 		return err
 	}
 
 	// get access apps to incrementally update
-	cfApps, _, err := api.ListAccessApplications(ctx, account, cloudflare.ListAccessApplicationsParams{})
+	cfApps, _, err := m.api.ListAccessApplications(ctx, account, cloudflare.ListAccessApplicationsParams{})
 	if err != nil {
 		return err
 	}
@@ -143,7 +122,7 @@ func syncServices(cli *client.Client, api *cloudflare.API) error {
 	// sync the services and aggregate the ingress rules
 	var ingressRules []cloudflare.UnvalidatedIngressRule
 	for _, svc := range services {
-		rule, err := svc.Sync(ctx, api)
+		rule, err := svc.Sync(ctx, m.api)
 		if err != nil {
 			fmt.Printf("Failed to sync %s, skipping: %s\n", svc.Name, err)
 			continue
@@ -152,189 +131,6 @@ func syncServices(cli *client.Client, api *cloudflare.API) error {
 		ingressRules = append(ingressRules, *rule)
 	}
 
-	// // delete dns records for deleted services
-	// for _, rule := range config.Config.Ingress {
-	// 	if rule.Hostname == "" {
-	// 		continue
-	// 	}
-	//
-	// 	var record *cloudflare.DNSRecord
-	// 	for _, z := range zones {
-	// 		if rule.Hostname == z.Name {
-	// 			record = &z
-	// 			break
-	// 		}
-	// 	}
-	//
-	// 	if record == nil {
-	// 		fmt.Printf("no zone associated with existing ingress rule %s (%s)\n", rule.Hostname, rule.Service)
-	// 		continue
-	// 	}
-	//
-	// 	if err = api.DeleteDNSRecord(ctx, zone, record.ID); err != nil {
-	// 		fmt.Printf("failed to delete: %s\n", err)
-	// 	}
-	// }
-	//
-	// // create dns records for new services
-	// for _, rule := range ingressRules {
-	// 	var record *cloudflare.DNSRecord
-	// 	for i, z := range zones {
-	// 		if rule.Hostname == z.Name {
-	// 			record = &z
-	// 			zones = remove(zones, i)
-	// 			break
-	// 		}
-	// 	}
-	//
-	// 	if record != nil {
-	// 		continue
-	// 	}
-	//
-	// 	proxied := true
-	// 	_, err = api.CreateDNSRecord(ctx, zone, cloudflare.CreateDNSRecordParams{
-	// 		Name:    rule.Hostname,
-	// 		Content: fmt.Sprintf("%s.cfargotunnel.com", tunnel_id),
-	// 		Type:    "CNAME",
-	// 		Proxied: &proxied,
-	// 		Comment: "[AUTOGENERATED] homelab service",
-	// 	})
-	// 	if err != nil {
-	// 		fmt.Printf("failed to create dns record %s: %s\n", rule.Hostname, err)
-	// 	}
-	// }
-	//
-	// // delete access apps for deleted services
-	// for _, rule := range config.Config.Ingress {
-	// 	if rule.OriginRequest == nil || rule.OriginRequest.Access == nil || !rule.OriginRequest.Access.Required {
-	// 		continue
-	// 	}
-	//
-	// 	var app *cloudflare.AccessApplication
-	// 	for _, a := range apps {
-	// 		if slices.Contains(rule.OriginRequest.Access.AudTag, a.AUD) {
-	// 			app = &a
-	// 			break
-	// 		}
-	// 	}
-	//
-	// 	if app == nil {
-	// 		fmt.Printf("no app associated with existing ingress rule %s (%s)\n", rule.Hostname, rule.Service)
-	// 		continue
-	// 	}
-	//
-	// 	err = api.DeleteAccessApplication(ctx, account, app.ID)
-	// 	if err != nil {
-	// 		fmt.Printf("failed to delete app %s\n", app.Name)
-	// 	}
-	// }
-	//
-	// // grab a list of policies
-	// policies, _, err := api.ListAccessPolicies(ctx, account, cloudflare.ListAccessPoliciesParams{})
-	// if err != nil {
-	// 	return err
-	// }
-	//
-	// // try to find a policy to use
-	// var policy *cloudflare.AccessPolicy
-	// for _, p := range policies {
-	// 	if p.Decision != "allow" {
-	// 		continue
-	// 	}
-	//
-	// 	for _, rule := range p.Include {
-	// 		if r, ok := rule.(cloudflare.AccessGroupAccessGroup); ok {
-	// 			if r.Group.ID == group_id {
-	// 				policy = &p
-	// 				break
-	// 			}
-	// 		}
-	// 	}
-	//
-	// 	if policy != nil {
-	// 		break
-	// 	}
-	// }
-	//
-	// // create a new policy if we didnt find one
-	// if policy == nil {
-	// 	p, err := api.CreateAccessPolicy(ctx, account, cloudflare.CreateAccessPolicyParams{
-	// 		Decision: "allow",
-	// 		Name:     "[AUTOGENERATED] Allow group",
-	// 		Include: []interface{}{
-	// 			cloudflare.AccessGroupAccessGroup{
-	// 				Group: struct {
-	// 					ID string `json:"id"`
-	// 				}{
-	// 					ID: group_id,
-	// 				},
-	// 			},
-	// 		},
-	// 	})
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	//
-	// 	policy = &p
-	// }
-	//
-	// // create access apps for new services
-	// for _, domain := range domainInfos {
-	// 	if !domain.Access {
-	// 		continue
-	// 	}
-	//
-	// 	var app *cloudflare.AccessApplication
-	// 	for _, a := range apps {
-	// 		if slices.Contains(a.SelfHostedDomains, domain.Domain) {
-	// 			app = &a
-	// 			break
-	// 		}
-	// 	}
-	//
-	// 	if app != nil {
-	// 		continue
-	// 	}
-	//
-	// 	t := true
-	// 	allowedIdps := []string{idp_id}
-	// 	autoRedirect := &t
-	// 	if domain.CustomAccess {
-	// 		allowedIdps = []string{}
-	// 		autoRedirect = nil
-	// 	}
-	//
-	// 	a, err := api.CreateAccessApplication(ctx, account, cloudflare.CreateAccessApplicationParams{
-	// 		AllowAuthenticateViaWarp: &t,
-	// 		AllowedIdps:              allowedIdps,
-	// 		AutoRedirectToIdentity:   autoRedirect,
-	// 		Domain:                   domain.Domain,
-	// 		Name:                     domain.Name,
-	// 		Type:                     cloudflare.SelfHosted,
-	// 		SkipInterstitial:         &t,
-	// 		Policies:                 []string{policy.ID},
-	// 	})
-	// 	if err != nil {
-	// 		fmt.Printf("failed to create application for ")
-	// 	}
-	//
-	// 	or := domain.ingressRule.OriginRequest
-	// 	if or == nil {
-	// 		or = &cloudflare.OriginRequestConfig{}
-	// 		domain.ingressRule.OriginRequest = or
-	// 	}
-	//
-	// 	access := or.Access
-	// 	if access == nil {
-	// 		access = &cloudflare.AccessConfig{}
-	// 		or.Access = access
-	// 	}
-	//
-	// 	access.AudTag = []string{a.AUD}
-	// 	access.Required = true
-	// 	access.TeamName = "mattprovost"
-	// }
-
 	// add the catch-all rule
 	ingressRules = append(ingressRules, cloudflare.UnvalidatedIngressRule{
 		Hostname: "",
@@ -342,7 +138,7 @@ func syncServices(cli *client.Client, api *cloudflare.API) error {
 	})
 
 	// update the tunnel configuration
-	_, err = api.UpdateTunnelConfiguration(ctx, account, cloudflare.TunnelConfigurationParams{
+	_, err = m.api.UpdateTunnelConfiguration(ctx, account, cloudflare.TunnelConfigurationParams{
 		TunnelID: tunnel_id,
 		Config: cloudflare.TunnelConfiguration{
 			Ingress: ingressRules,
@@ -358,17 +154,4 @@ func syncServices(cli *client.Client, api *cloudflare.API) error {
 	fmt.Printf("Successfully updated config\n")
 
 	return nil
-}
-
-func remove[T any](s []T, i int) []T {
-	s[i] = s[len(s)-1]
-	return s[:len(s)-1]
-}
-
-func copied[T any](s []*T) (out []T) {
-	for _, v := range s {
-		out = append(out, *v)
-	}
-
-	return
 }
