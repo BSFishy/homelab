@@ -15,6 +15,7 @@ services:
     ports:
       - 9696
     deploy:
+      mode: global
       labels:
         dev.mattprovost.prowlarr.domain: prowlarr.home.mattprovost.dev
         dev.mattprovost.prowlarr.port: 9696
