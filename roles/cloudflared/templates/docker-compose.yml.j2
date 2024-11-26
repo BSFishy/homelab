@@ -6,8 +6,6 @@ services:
       - TUNNEL_TOKEN={{ cloudflare_tunnel.tunnel_token }}
     networks:
       - cloudflared-network
-    deploy:
-      mode: replicated
 
 networks:
   cloudflared-network:

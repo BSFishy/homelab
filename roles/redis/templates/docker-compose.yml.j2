@@ -16,8 +16,7 @@ services:
       - "6379"
     secrets:
       - redis-password
-    deploy:
-      mode: global
+    restart: unless-stopped
 
 networks:
   redis:
