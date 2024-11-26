@@ -49,6 +49,13 @@
     dest: "{{ role_path + '/files/config/configuration.yml' }}"
     mode: "0644"
 
+- name: Create configuration
+  community.docker.docker_config:
+    name: authelia-config
+    data: "{{ lookup('template', role_path + '/templates/configuration.yml.j2') | b64encode }}"
+    data_is_b64: true
+    state: present
+
 - name: Deploy authelia stack
   community.docker.docker_stack:
     state: present
