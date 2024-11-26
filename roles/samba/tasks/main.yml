@@ -1,0 +1,9 @@
+- name: Deploy samba stack
+  community.docker.docker_stack:
+    state: present
+    name: samba
+    compose:
+      - "{{ samba_compose }}"
+    prune: true
+  vars:
+    samba_compose: "{{ lookup('template', role_path + '/templates/docker-compose.yml.j2') | from_yaml }}"
