@@ -1,0 +1,25 @@
+services:
+  jellyseerr:
+    image: fallenbagel/jellyseerr:latest
+    environment:
+      - LOG_LEVEL=debug
+      - "PUID={{ ansible_user_uid }}"
+      - "PGID={{ ansible_user_gid }}"
+      - "TZ=America/Chicago"
+    ports:
+      - 5055
+    volumes:
+      - "{{ role_path }}/files/config:/app/config"
+    networks:
+      - cloudflared-network
+      - prowlarr-network
+    deploy:
+      labels:
+        dev.mattprovost.jellyseerr.domain: jellyseerr.home.mattprovost.dev
+        dev.mattprovost.jellyseerr.port: 5055
+
+networks:
+  cloudflared-network:
+    external: true
+  prowlarr-network:
+    external: true

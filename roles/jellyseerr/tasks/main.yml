@@ -1,0 +1,9 @@
+- name: Deploy jellyseerr stack
+  community.docker.docker_stack:
+    state: present
+    name: jellyseerr
+    compose:
+      - "{{ jellyseerr_compose }}"
+    prune: true
+  vars:
+    jellyseerr_compose: "{{ lookup('template', role_path + '/templates/docker-compose.yml.j2') | from_yaml }}"

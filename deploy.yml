@@ -47,6 +47,7 @@
     - prowlarr
     - sonarr
     - jellyfin
+    - jellyseerr
 
     # manager
     - manager
