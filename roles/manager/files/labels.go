@@ -16,6 +16,7 @@ type DomainInfo struct {
 
 	Transmission bool
 	Sonarr       bool
+	Radarr       bool
 	Prowlarr     bool
 }
 
@@ -68,6 +69,7 @@ func extractDomainInfo(labels map[string]string) []DomainInfo {
 
 			Transmission: serviceInfo["transmission"] == "true",
 			Sonarr:       serviceInfo["sonarr"] == "true",
+			Radarr:       serviceInfo["radarr"] == "true",
 			Prowlarr:     serviceInfo["prowlarr"] == "true",
 		})
 	}

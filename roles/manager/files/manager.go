@@ -11,6 +11,7 @@ import (
 
 	"github.com/BSFishy/starr"
 	"github.com/BSFishy/starr/prowlarr"
+	"github.com/BSFishy/starr/radarr"
 	"github.com/BSFishy/starr/sonarr"
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/docker/docker/api/types/events"
@@ -97,6 +98,12 @@ func (m *manager) starrServiceIteration() {
 	for _, s := range m.ss.sonarrs {
 		if err := m.syncSonarr(&s); err != nil {
 			fmt.Printf("failed to sync sonarr: %s\n", err)
+		}
+	}
+
+	for _, r := range m.ss.radarrs {
+		if err := m.syncRadarr(&r); err != nil {
+			fmt.Printf("failed to sync radarr: %s\n", err)
 		}
 	}
 }
@@ -211,13 +218,61 @@ func (m *manager) syncProwlarr(pr *prowlarrrr) error {
 		}
 	}
 
+	for _, r := range m.ss.radarrs {
+		var rad *prowlarr.ApplicationOutput
+		for _, app := range apps {
+			if app.Name == r.Name {
+				rad = app
+			}
+		}
+
+		fields := map[string]interface{}{
+			"prowlarrUrl":                   fmt.Sprintf("http://%s:%d", pr.Host, pr.Port),
+			"baseUrl":                       fmt.Sprintf("http://%s:%d", r.Host, r.Port),
+			"apiKey":                        os.Getenv(fmt.Sprintf("STARR_API_KEY_%s", r.Name)),
+			"syncCategories":                []int{5000, 5010, 5020, 5030, 5040, 5045, 5050, 5090},
+			"animeSyncCategories":           []int{5070},
+			"syncAnimeStandardFormatSearch": true,
+			"syncRejectBlocklistedTorrentHashesWhileGrabbing": false,
+		}
+
+		application := &prowlarr.ApplicationInput{
+			Name:               r.Name,
+			Implementation:     "Radarr",
+			ImplementationName: "Radarr",
+			ConfigContract:     "RadarrSettings",
+			Tags:               []int{},
+			SyncLevel:          "fullSync",
+			Fields:             toFields(fields),
+		}
+
+		if rad == nil {
+			// create new app
+			_, err := p.AddApplication(application)
+			if err != nil {
+				fmt.Printf("failed to add application to prowlarr: %s\n", err)
+				continue
+			}
+		} else {
+			// update app
+			if rad.Implementation != application.Implementation || rad.ImplementationName != application.ImplementationName || rad.ConfigContract != application.ConfigContract || rad.SyncLevel != application.SyncLevel || !fieldsMatch(rad.Fields, fields) {
+				application.ID = rad.ID
+				_, err := p.UpdateApplication(application, false)
+				if err != nil {
+					fmt.Printf("failed to update application in prowlarr: %s\n", err)
+					continue
+				}
+			}
+		}
+	}
+
 	fmt.Printf("successfully synced prowlarr\n")
 
 	return nil
 }
 
 func (m *manager) syncSonarr(so *sonarrrr) error {
-	fmt.Printf("Syncing prowlarr\n")
+	fmt.Printf("Syncing sonarr\n")
 
 	s := so.Sonarr
 	dlClients, err := s.GetDownloadClients()
@@ -249,8 +304,6 @@ func (m *manager) syncSonarr(so *sonarrrr) error {
 			ConfigContract: "TransmissionSettings",
 			Tags:           []int{},
 			Fields:         toFields(fields),
-			// Categories:         []interface{}{},
-			// SupportsCategories: false,
 		}
 
 		if client == nil {
@@ -273,6 +326,64 @@ func (m *manager) syncSonarr(so *sonarrrr) error {
 	}
 
 	fmt.Printf("successfully synced sonarr\n")
+	return nil
+}
+
+func (m *manager) syncRadarr(ra *radarrrr) error {
+	fmt.Printf("Syncing radarr\n")
+
+	r := ra.Radarr
+	dlClients, err := r.GetDownloadClients()
+	if err != nil {
+		return errors.Wrapf(err, "failed to get download clients for radarr")
+	}
+
+	for _, t := range m.ss.transmissions {
+		var client *radarr.DownloadClientOutput
+		for _, c := range dlClients {
+			if c.Name == t.Name {
+				client = c
+				break
+			}
+		}
+
+		fields := map[string]interface{}{
+			"host":   t.Host,
+			"port":   t.Port,
+			"useSsl": false,
+		}
+
+		downloadClient := &radarr.DownloadClientInput{
+			Enable:         true,
+			Name:           t.Name,
+			Priority:       1,
+			Implementation: "Transmission",
+			Protocol:       "torrent",
+			ConfigContract: "TransmissionSettings",
+			Tags:           []int{},
+			Fields:         toFields(fields),
+		}
+
+		if client == nil {
+			// add new download client
+			_, err := r.AddDownloadClient(downloadClient)
+			if err != nil {
+				fmt.Printf("failed to add download client to radarr: %s\n", err)
+				continue
+			}
+		} else {
+			// check if client needs to be updated
+			if !client.Enable || client.Implementation != downloadClient.Implementation || client.Protocol != downloadClient.Protocol || client.ConfigContract != downloadClient.ConfigContract || !fieldsMatch(client.Fields, fields) {
+				downloadClient.ID = client.ID
+				_, err := r.UpdateDownloadClient(downloadClient, false)
+				if err != nil {
+					fmt.Printf("failed to update download client %s in radarr: %s\n", t.Name, err)
+				}
+			}
+		}
+	}
+
+	fmt.Printf("successfully synced radarr\n")
 	return nil
 }
 
