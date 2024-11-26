@@ -19,8 +19,7 @@ services:
     ports:
       - "389"
       - "636"
-    deploy:
-      mode: global
+    restart: unless-stopped
 
   lum:
     image: wheelybird/ldap-user-manager:latest
@@ -40,12 +39,12 @@ services:
     ports:
       - 80
     deploy:
-      mode: global
       labels:
         dev.mattprovost.lum.domain: ldap.home.mattprovost.dev
         dev.mattprovost.lum.port: 80
         dev.mattprovost.lum.access: "true"
         dev.mattprovost.lum.access.custom: "true"
+    restart: unless-stopped
 
   pla:
     image: osixia/phpldapadmin:latest
@@ -61,7 +60,6 @@ services:
     ports:
       - 80
     deploy:
-      mode: global
       labels:
         dev.mattprovost.pla.domain: pla.home.mattprovost.dev
         dev.mattprovost.pla.port: 80

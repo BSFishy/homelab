@@ -12,8 +12,6 @@ services:
       - "GROUPID={{ ansible_user_gid }}"
       - "SHARE1=public;/data"
       - "NMBD=1"
-    deploy:
-      mode: global
 
 volumes:
   media-server:

@@ -1,3 +1,5 @@
+# TODO: do i want to make this not a template?
+
 services:
   postgres:
     image: postgres:alpine
@@ -18,8 +20,7 @@ services:
       - postgres-password
     ports:
       - "5432"
-    deploy:
-      mode: global
+    restart: unless-stopped
 
 networks:
   postgres:
