@@ -1,0 +1,18 @@
+services:
+  samba:
+    image: dperson/samba:latest
+    volumes:
+      - "media-server:/data"
+    ports:
+      - "139:139"
+      - "445:445"
+    environment:
+      - "TZ=America/Chicago"
+      - "USERID={{ ansible_user_uid }}"
+      - "GROUPID={{ ansible_user_gid }}"
+      - "SHARE1=public;/data"
+      - "NMBD=1"
+
+volumes:
+  media-server:
+    external: true
