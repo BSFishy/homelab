@@ -9,6 +9,7 @@ import (
 	"slices"
 
 	"github.com/BSFishy/starr/prowlarr"
+	"github.com/BSFishy/starr/radarr"
 	"github.com/BSFishy/starr/sonarr"
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/docker/docker/api/types"
@@ -76,6 +77,13 @@ func syncServices(m *manager) error {
 			if domain.Sonarr {
 				ss.sonarrs = append(ss.sonarrs, sonarrrr{
 					Sonarr: sonarr.New(NewStarr(serviceName, domain)),
+					arr:    r,
+				})
+			}
+
+			if domain.Radarr {
+				ss.radarrs = append(ss.radarrs, radarrrr{
+					Radarr: radarr.New(NewStarr(serviceName, domain)),
 					arr:    r,
 				})
 			}

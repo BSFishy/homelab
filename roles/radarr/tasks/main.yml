@@ -1,0 +1,19 @@
+- name: Create radarr api key
+  ansible.builtin.set_fact:
+    radarr_api_key: "{{ lookup('ansible.builtin.password', role_path + '/files/credentials/api_key.txt', length=32, chars=['ascii_letters']) }}"
+
+- name: Create config file
+  ansible.builtin.template:
+    src: config.xml.j2
+    dest: "{{ role_path + '/files/config/config.xml' }}"
+    mode: "0644"
+
+- name: Deploy radarr stack
+  community.docker.docker_stack:
+    state: present
+    name: radarr
+    compose:
+      - "{{ radarr_compose }}"
+    prune: true
+  vars:
+    radarr_compose: "{{ lookup('template', role_path + '/templates/docker-compose.yml.j2') | from_yaml }}"

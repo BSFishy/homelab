@@ -1,0 +1,33 @@
+services:
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    environment:
+      - "PUID={{ ansible_user_uid }}"
+      - "PGID={{ ansible_user_gid }}"
+      - "TZ=America/Chicago"
+    volumes:
+      - "{{ role_path }}/files/config:/config"
+      - "media-server:/data"
+    networks:
+      - cloudflared-network
+      - prowlarr-network
+      - transmission-network
+    ports:
+      - 7878
+    deploy:
+      labels:
+        dev.mattprovost.radarr.domain: radarr.home.mattprovost.dev
+        dev.mattprovost.radarr.port: 7878
+        dev.mattprovost.radarr.radarr: "true"
+
+networks:
+  cloudflared-network:
+    external: true
+  prowlarr-network:
+    external: true
+  transmission-network:
+    external: true
+
+volumes:
+  media-server:
+    external: true
