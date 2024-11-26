@@ -10,7 +10,6 @@
     scope: swarm
     attachable: true
     appends: true
-    enable_ipv6: true
   when: not cloudflared_network.exists
 
 - name: Deploy cloudflared stack
