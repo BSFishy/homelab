@@ -1,5 +1,12 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/ansible/schemas/main/f/ansible.json
 
+- name: Prepare the metal for deployment
+  hosts: manager
+  become: true
+  gather_facts: true
+  roles:
+    - prepare
+
 - name: Configure Cloudflare Zero Trust
   hosts: localhost
   gather_facts: false
@@ -13,13 +20,6 @@
         tunnel_secret: "{{ lookup('ansible.builtin.env', 'CLOUDFLARE_TUNNEL_SECRET') }}"
         name: homelab2
       register: cloudflare_tunnel
-
-- name: Prepare the metal for deployment
-  hosts: manager
-  become: true
-  gather_facts: true
-  roles:
-    - prepare
 
 - name: Deploy Docker stacks
   hosts: manager
