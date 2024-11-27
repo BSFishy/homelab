@@ -17,3 +17,7 @@ dev:
 # delete all stacks
 clean-stacks:
   docker stack ls --format json | jq -r .Name | xargs docker stack rm
+
+# delete all volumes
+clean-volumes:
+  docker volume ls --format json | jq -r .Name | xargs docker volume rm
