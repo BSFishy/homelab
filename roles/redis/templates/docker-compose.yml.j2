@@ -7,7 +7,6 @@ services:
         "-c",
         "redis-server --requirepass $$(cat /run/secrets/redis-password)",
       ]
-    user: "{{ ansible_user_uid }}:{{ ansible_user_gid }}"
     volumes:
       - "data:/data"
     networks:
