@@ -13,7 +13,7 @@ services:
         dev.mattprovost.authelia.domain: auth.home.mattprovost.dev
         dev.mattprovost.authelia.port: 9091
     configs:
-      - source: authelia-config
+      - source: "{{ authelia_config.config_name }}"
         target: /config/configuration.yml
     secrets:
       - redis-password
@@ -57,5 +57,5 @@ secrets:
     external: true
 
 configs:
-  authelia-config:
+  {{ authelia_config.config_name }}:
     external: true

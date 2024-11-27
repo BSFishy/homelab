@@ -42,19 +42,14 @@
     # which should work fine.
     PYTHONPATH: ""
 
-# TODO: this seems to be changing every run. fix that.
-- name: Create configuration file from a template
-  ansible.builtin.template:
-    src: configuration.yml.j2
-    dest: "{{ role_path + '/files/config/configuration.yml' }}"
-    mode: "0644"
-
 - name: Create configuration
   community.docker.docker_config:
     name: authelia-config
     data: "{{ lookup('template', role_path + '/templates/configuration.yml.j2') | b64encode }}"
     data_is_b64: true
     state: present
+    rolling_versions: true
+  register: authelia_config
 
 - name: Deploy authelia stack
   community.docker.docker_stack:
