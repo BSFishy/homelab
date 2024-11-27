@@ -6,6 +6,8 @@ services:
       - "PUID={{ ansible_user_uid }}"
       - "PGID={{ ansible_user_gid }}"
       - "TZ=America/Chicago"
+    volumes:
+      - "config:/app/config"
     ports:
       - 5055
     networks:
@@ -15,6 +17,9 @@ services:
       labels:
         dev.mattprovost.jellyseerr.domain: jellyseerr.home.mattprovost.dev
         dev.mattprovost.jellyseerr.port: 5055
+
+volumes:
+  config:
 
 networks:
   cloudflared-network:
