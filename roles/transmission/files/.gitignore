@@ -1,5 +1,0 @@
-# config directory
-/config/*
-
-# keep all gitkeep files
-!**/.gitkeep

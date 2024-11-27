@@ -16,11 +16,14 @@
   ansible.builtin.set_fact:
     prowlarr_api_key: "{{ lookup('ansible.builtin.password', role_path + '/files/credentials/api_key.txt', length=32, chars=['ascii_letters']) }}"
 
-- name: Create config file
-  ansible.builtin.template:
-    src: config.xml.j2
-    dest: "{{ role_path + '/files/config/config.xml' }}"
-    mode: "0644"
+- name: Create configuration
+  community.docker.docker_config:
+    name: prowlarr-config
+    data: "{{ lookup('template', role_path + '/templates/config.xml.j2') | b64encode }}"
+    data_is_b64: true
+    state: present
+    rolling_versions: true
+  register: prowlarr_config
 
 - name: Deploy prowlarr stack
   community.docker.docker_stack:

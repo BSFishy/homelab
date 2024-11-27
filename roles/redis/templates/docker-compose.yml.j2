@@ -9,7 +9,7 @@ services:
       ]
     user: "{{ ansible_user_uid }}:{{ ansible_user_gid }}"
     volumes:
-      - "{{ role_path }}/files/data:/data"
+      - "data:/data"
     networks:
       - redis
     ports:
@@ -25,3 +25,6 @@ networks:
 secrets:
   redis-password:
     external: true
+
+volumes:
+  data:

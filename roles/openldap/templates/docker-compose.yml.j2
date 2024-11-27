@@ -10,8 +10,8 @@ services:
       - "LDAP_OPENLDAP_UID={{ ansible_user_uid }}"
       - "LDAP_OPENLDAP_GID={{ ansible_user_gid }}"
     volumes:
-      - "{{ role_path }}/files/database:/var/lib/ldap"
-      - "{{ role_path }}/files/config:/etc/ldap/slapd.d"
+      - "database:/var/lib/ldap"
+      - "config:/etc/ldap/slapd.d"
     networks:
       - openldap
     secrets:
@@ -75,3 +75,7 @@ networks:
 secrets:
   openldap-password:
     external: true
+
+volumes:
+  config:
+  database:

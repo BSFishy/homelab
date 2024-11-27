@@ -6,18 +6,22 @@ services:
       - "PGID={{ ansible_user_gid }}"
       - "TZ=America/Chicago"
     volumes:
-      - "{{ role_path }}/files/config:/config"
+      - "config:/config"
       - "media-server:/data"
     networks:
       - cloudflared-network
       - prowlarr-network
       - transmission-network
+    configs:
+      - source: "{{ radarr_config.config_name }}"
+        target: /config/config.xml
     ports:
       - 7878
     deploy:
       labels:
         dev.mattprovost.radarr.domain: radarr.home.mattprovost.dev
         dev.mattprovost.radarr.port: 7878
+        dev.mattprovost.radarr.access: "true"
         dev.mattprovost.radarr.radarr: "true"
 
 networks:
@@ -29,5 +33,10 @@ networks:
     external: true
 
 volumes:
+  config:
   media-server:
+    external: true
+
+configs:
+  {{ radarr_config.config_name }}:
     external: true

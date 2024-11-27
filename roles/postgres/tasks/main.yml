@@ -19,6 +19,15 @@
     data_is_b64: true
     state: present
 
+- name: Create authelia script
+  community.docker.docker_config:
+    name: postgres-authelia-script
+    data: "{{ lookup('ansible.builtin.file', role_path + '/files/init.d/authelia.sql') | b64encode }}"
+    data_is_b64: true
+    state: present
+    rolling_versions: true
+  register: postgres_authelia_script
+
 - name: Deploy postgres stack
   community.docker.docker_stack:
     state: present
