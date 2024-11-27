@@ -8,8 +8,6 @@ services:
       - "TZ=America/Chicago"
     ports:
       - 5055
-    volumes:
-      - "{{ role_path }}/files/config:/app/config"
     networks:
       - cloudflared-network
       - prowlarr-network

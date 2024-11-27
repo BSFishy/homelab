@@ -6,8 +6,11 @@ services:
       - "PGID={{ ansible_user_gid }}"
       - "TZ=America/Chicago"
     volumes:
-      - "{{ role_path }}/files/config:/config"
+      - "config:/config"
       - "media-server:/data"
+    configs:
+      - source: "{{ sonarr_config.config_name }}"
+        target: /config/config.xml
     networks:
       - cloudflared-network
       - prowlarr-network
@@ -18,6 +21,7 @@ services:
       labels:
         dev.mattprovost.sonarr.domain: sonarr.home.mattprovost.dev
         dev.mattprovost.sonarr.port: 8989
+        dev.mattprovost.sonarr.access: "true"
         dev.mattprovost.sonarr.sonarr: "true"
 
 networks:
@@ -29,5 +33,10 @@ networks:
     external: true
 
 volumes:
+  config:
   media-server:
+    external: true
+
+configs:
+  {{ sonarr_config.config_name }}:
     external: true

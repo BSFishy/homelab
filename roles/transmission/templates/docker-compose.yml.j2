@@ -13,7 +13,7 @@ services:
       - TRANSMISSION_DOWNLOAD_DIR=/data/torrents
       - TRANSMISSION_INCOMPLETE_DIR_ENABLED=false
     volumes:
-      - "{{ role_path }}/files/config:/config/transmission-home"
+      - "config:/config/transmission-home"
       - "media-server:/data"
     networks:
       - cloudflared-network
@@ -36,5 +36,6 @@ networks:
     external: true
 
 volumes:
+  config:
   media-server:
     external: true
