@@ -13,7 +13,8 @@
     name:
       - jsondiff
       - pyyaml
-      - cloudflare
+      - cloudflare==3.1.*
       - cryptography
+      - pydantic==2.9.*
     state: present
     extra_args: --break-system-packages
