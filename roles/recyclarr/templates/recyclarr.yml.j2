@@ -1,0 +1,34 @@
+sonarr:
+  sonarr_main:
+    base_url: http://sonarr_sonarr:8989
+    api_key: {{ sonarr_api_key }}
+
+    include:
+      - template: sonarr-quality-definition-series
+      - template: sonarr-v4-quality-profile-web-2160p
+      - template: sonarr-v4-custom-formats-web-2160p
+
+    media_naming:
+      series: jellyfin
+      season: default
+      episodes:
+        rename: true
+        standard: default
+        daily: default
+        anime: default
+
+radarr:
+  radarr_main:
+    base_url: http://radarr_radarr:7878
+    api_key: {{ radarr_api_key }}
+
+    include:
+      - template: radarr-quality-definition-movie
+      - template: radarr-quality-profile-uhd-bluray-web
+      - template: radarr-custom-formats-uhd-bluray-web
+
+    media_naming:
+      folder: jellyfin
+      movie:
+        rename: true
+        standard: jellyfin

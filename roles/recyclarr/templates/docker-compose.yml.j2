@@ -1,0 +1,23 @@
+services:
+  recyclarr:
+    image: ghcr.io/recyclarr/recyclarr
+    volumes:
+      - "config:/config"
+    environment:
+      - "TZ=America/Chicago"
+    networks:
+      - prowlarr-network
+    configs:
+      - source: "{{ recyclarr_config.config_name }}"
+        target: /config/recyclarr.yml
+
+volumes:
+  config:
+
+networks:
+  prowlarr-network:
+    external: true
+
+configs:
+  {{ recyclarr_config.config_name }}:
+    external: true
