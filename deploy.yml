@@ -47,6 +47,7 @@
     - prowlarr
     - sonarr
     - radarr
+    - recyclarr
     - jellyfin
     - jellyseerr
     - samba
