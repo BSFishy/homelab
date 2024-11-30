@@ -1,17 +1,18 @@
 services:
   jellyfin:
-    image: lscr.io/linuxserver/jellyfin:latest
+    image: "{{ image }}:latest"
     environment:
-      - "PUID={{ ansible_user_uid }}"
-      - "PGID={{ ansible_user_gid }}"
       - "TZ=America/Chicago"
     volumes:
-      - "{{ role_path }}/files/config:/config"
-      - cache:/cache
+      - "config:/config"
+      - "cache:/cache"
       - "media-server:/data"
     networks:
       - cloudflared-network
       - openldap
+    configs:
+      - source: "{{ jellyfin_config.config_name }}"
+        target: /tmp/LDAP-Auth.xml
     ports:
       - 8096
       - 1900:1900/udp
@@ -29,5 +30,10 @@ networks:
 
 volumes:
   cache:
+  config:
   media-server:
+    external: true
+
+configs:
+  {{ jellyfin_config.config_name }}:
     external: true

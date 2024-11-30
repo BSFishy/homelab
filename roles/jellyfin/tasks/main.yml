@@ -1,22 +1,21 @@
-- name: Download ldap plugin
-  ansible.builtin.get_url:
-    url: https://repo.jellyfin.org/releases/plugin/ldap-authentication/ldap-authentication_19.0.0.0.zip
-    dest: "{{ role_path + '/files/download/ldapauth.zip' }}"
-    mode: "0644"
+- name: Build custom Jellyfin image
+  community.docker.docker_image_build:
+    path: "{{ role_path }}/files"
+    name: "{{ image }}"
+    pull: true
+    rebuild: "always"
+    outputs:
+      - push: true
+        type: image
 
-- name: Unzip ldap plugin
-  ansible.builtin.unarchive:
-    src: "{{ role_path + '/files/download/ldapauth.zip' }}"
-    dest: "{{ role_path + '/files/config/data/plugins/ldapauth/' }}"
-    remote_src: true
-    mode: "0755"
-    creates: "{{ role_path + '/files/config/data/plugins/ldapauth/LDAP-Auth.dll' }}"
-
-- name: Create ldap config file
-  ansible.builtin.template:
-    src: LDAP-Auth.xml.j2
-    dest: "{{ role_path + '/files/config/data/plugins/configurations/LDAP-Auth.xml' }}"
-    mode: "0644"
+- name: Create LDAP config in Docker
+  community.docker.docker_config:
+    name: jellyfin_ldap_config
+    data: "{{ lookup('template', role_path + '/templates/LDAP-Auth.xml.j2') | b64encode }}"
+    data_is_b64: true
+    state: present
+    rolling_versions: true
+  register: jellyfin_config
 
 - name: Deploy jellyfin stack
   community.docker.docker_stack:
