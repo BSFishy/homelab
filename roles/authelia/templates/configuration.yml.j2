@@ -52,6 +52,7 @@ identity_providers:
         client_secret: "{{ authelia_client_secret | password_hash }}"
         public: false
         authorization_policy: "one_factor"
+        consent_mode: "implicit"
         redirect_uris:
           # TODO: make this configurable lol
           - "https://mattprovost.cloudflareaccess.com/cdn-cgi/access/callback"
