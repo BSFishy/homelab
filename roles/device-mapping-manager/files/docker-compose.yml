@@ -1,0 +1,25 @@
+services:
+  device-mapping-manager:
+    image: alpinelinux/docker-cli
+    entrypoint: docker
+    command: |
+      run
+      --rm
+      -i
+      --name device-manager
+      --privileged
+      --cgroupns=host
+      --pid=host
+      --userns=host
+      -v /sys:/host/sys
+      -v /var/run/docker.sock:/var/run/docker.sock
+      ghcr.io/allfro/allfro/device-mapping-manager:sha-0651661
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      mode: global
+      restart_policy:
+        condition: any
+      placement:
+        constraints:
+          - node.labels.dmm == true

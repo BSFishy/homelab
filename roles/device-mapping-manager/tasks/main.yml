@@ -1,0 +1,7 @@
+- name: Deploy device-mapping-manager stack
+  community.docker.docker_stack:
+    state: present
+    name: device_mapping_manager
+    compose:
+      - "{{ role_path }}/files/docker-compose.yml"
+    prune: true

@@ -27,6 +27,7 @@
   roles:
     # basic infrastructure
     - registry
+    - device-mapping-manager
     - postgres
     - redis
 

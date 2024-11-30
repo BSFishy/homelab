@@ -7,6 +7,7 @@ services:
       - "config:/config"
       - "cache:/cache"
       - "media-server:/data"
+      - "/dev/dri:/dev/dri"
     networks:
       - cloudflared-network
       - openldap
