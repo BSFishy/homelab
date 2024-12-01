@@ -18,12 +18,16 @@
         api_key: "{{ lookup('ansible.builtin.env', 'CLOUDFLARE_API_KEY') }}"
         account_id: "{{ lookup('ansible.builtin.env', 'CLOUDFLARE_ACCOUNT_ID') }}"
         tunnel_secret: "{{ lookup('ansible.builtin.env', 'CLOUDFLARE_TUNNEL_SECRET') }}"
-        name: homelab2
+        name: "homelab ({{ lookup('ansible.builtin.env', 'INSTANCE_NAME') }})"
       register: cloudflare_tunnel
 
 - name: Deploy Docker stacks
   hosts: manager
   gather_facts: true
+  pre_tasks:
+    - name: Set base domain
+      set_fact:
+        base_domain: "{{ lookup('ansible.builtin.env', 'CLOUDFLARE_BASE_DOMAIN') }}"
   roles:
     # basic infrastructure
     - registry

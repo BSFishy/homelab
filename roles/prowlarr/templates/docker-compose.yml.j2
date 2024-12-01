@@ -19,7 +19,7 @@ services:
       - 9696
     deploy:
       labels:
-        dev.mattprovost.prowlarr.domain: prowlarr.home.mattprovost.dev
+        dev.mattprovost.prowlarr.domain: "{{ lookup('service_domain', 'prowlarr') }}"
         dev.mattprovost.prowlarr.port: 9696
         dev.mattprovost.prowlarr.access: "true"
         dev.mattprovost.prowlarr.prowlarr: "true"

@@ -15,7 +15,7 @@ services:
       - prowlarr-network
     deploy:
       labels:
-        dev.mattprovost.jellyseerr.domain: jellyseerr.home.mattprovost.dev
+        dev.mattprovost.jellyseerr.domain: "{{ lookup('service_domain', 'jellyseerr') }}"
         dev.mattprovost.jellyseerr.port: 5055
 
 volumes:

@@ -16,7 +16,7 @@ authentication_backend:
 access_control:
   default_policy: deny
   rules:
-    - domain: "*.home.mattprovost.com"
+    - domain: "*.{{ base_domain }}"
       policy: one_factor
 
 session:
@@ -25,8 +25,8 @@ session:
   inactivity: 5m
   remember_me: 1M
   cookies:
-    - domain: "home.mattprovost.dev"
-      authelia_url: "https://auth.home.mattprovost.dev"
+    - domain: "{{ base_domain }}"
+      authelia_url: "https://{{ lookup('service_domain', 'auth') }}"
       name: "authelia_session"
       same_site: "lax"
   redis:
@@ -66,3 +66,12 @@ notifier:
   disable_startup_check: false
   filesystem:
     filename: "/config/notification.txt"
+
+server:
+  buffers:
+    read: 8192
+    write: 8192
+  timeouts:
+    read: '30s'
+    write: '30s'
+    idle: '30s'

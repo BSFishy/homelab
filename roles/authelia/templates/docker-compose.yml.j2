@@ -10,7 +10,7 @@ services:
       - 9091
     deploy:
       labels:
-        dev.mattprovost.authelia.domain: auth.home.mattprovost.dev
+        dev.mattprovost.authelia.domain: "{{ lookup('service_domain', 'auth') }}"
         dev.mattprovost.authelia.port: 9091
     configs:
       - source: "{{ authelia_config.config_name }}"

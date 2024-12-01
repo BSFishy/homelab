@@ -16,11 +16,12 @@ import (
 )
 
 var (
-	zone      *cloudflare.ResourceContainer
-	account   = cloudflare.AccountIdentifier(os.Getenv("CLOUDFLARE_ACCOUNT_ID"))
-	tunnel_id = os.Getenv("CLOUDFLARE_TUNNEL_ID")
-	group_id  = os.Getenv("CLOUDFLARE_GROUP_ID")
-	idp_id    = os.Getenv("CLOUDFLARE_IDP_ID")
+	zone          *cloudflare.ResourceContainer
+	account       = cloudflare.AccountIdentifier(os.Getenv("CLOUDFLARE_ACCOUNT_ID"))
+	tunnel_id     = os.Getenv("CLOUDFLARE_TUNNEL_ID")
+	group_id      = os.Getenv("CLOUDFLARE_GROUP_ID")
+	idp_id        = os.Getenv("CLOUDFLARE_IDP_ID")
+	instance_name = os.Getenv("INSTANCE_NAME")
 )
 
 func main() {
