@@ -3,5 +3,7 @@
     state: present
     name: dozzle
     compose:
-      - "{{ role_path }}/files/docker-compose.yml"
+      - "{{ dozzle_compose }}"
     prune: true
+  vars:
+    dozzle_compose: "{{ lookup('template', role_path + '/templates/docker-compose.yml.j2') | from_yaml }}"

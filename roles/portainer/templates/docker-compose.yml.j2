@@ -1,13 +1,3 @@
-networks:
-  agent_network:
-    driver: overlay
-    attachable: true
-  cloudflared-network:
-    external: true
-
-volumes:
-  portainer_data:
-
 services:
   agent:
     image: portainer/agent:2.21.4
@@ -38,6 +28,16 @@ services:
       placement:
         constraints: [node.role == manager]
       labels:
-        dev.mattprovost.portainer.domain: portainer.home.mattprovost.dev
+        dev.mattprovost.portainer.domain: "{{ lookup('service_domain', 'portainer') }}"
         dev.mattprovost.portainer.port: 9000
         dev.mattprovost.portainer.access: "true"
+
+networks:
+  agent_network:
+    driver: overlay
+    attachable: true
+  cloudflared-network:
+    external: true
+
+volumes:
+  portainer_data:

@@ -10,6 +10,7 @@ def main():
         api_email=dict(type="str", required=True, no_log=True),
         account_id=dict(type="str", required=True),
         client_secret=dict(type="str", required=True, no_log=True),
+        base_domain=dict(type="str", required=True),
         name=dict(type="str", required=True),
         state=dict(type="str", default="present", choices=["present", "absent"]),
     )
@@ -20,6 +21,7 @@ def main():
     api_email = module.params["api_email"]
     account_id = module.params["account_id"]
     client_secret = module.params["client_secret"]
+    base_domain = module.params["base_domain"]
     name = module.params["name"]
     state = module.params["state"]
 
@@ -46,9 +48,9 @@ def main():
                 config=dict(
                     client_id="cloudflare",
                     client_secret=client_secret,
-                    auth_url="https://auth.home.mattprovost.dev/api/oidc/authorization",
-                    token_url="https://auth.home.mattprovost.dev/api/oidc/token",
-                    certs_url="https://auth.home.mattprovost.dev/jwks.json",
+                    auth_url=f"https://auth.{base_domain}/api/oidc/authorization",
+                    token_url=f"https://auth.{base_domain}/api/oidc/token",
+                    certs_url=f"https://auth.{base_domain}/jwks.json",
                     claims=["preferred_username", "mail"],
                 ),
             )

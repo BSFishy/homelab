@@ -40,7 +40,7 @@ services:
       - 80
     deploy:
       labels:
-        dev.mattprovost.lum.domain: ldap.home.mattprovost.dev
+        dev.mattprovost.lum.domain: "{{ lookup('service_domain', 'ldap') }}"
         dev.mattprovost.lum.port: 80
         dev.mattprovost.lum.access: "true"
         dev.mattprovost.lum.access.custom: "true"
@@ -61,7 +61,7 @@ services:
       - 80
     deploy:
       labels:
-        dev.mattprovost.pla.domain: pla.home.mattprovost.dev
+        dev.mattprovost.pla.domain: "{{ lookup('service_domain', 'pla') }}"
         dev.mattprovost.pla.port: 80
         dev.mattprovost.pla.access: "true"
         dev.mattprovost.pla.access.custom: "true"

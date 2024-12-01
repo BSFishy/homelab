@@ -20,7 +20,7 @@ services:
       - 7359:7359/udp
     deploy:
       labels:
-        dev.mattprovost.jellyfin.domain: jellyfin.home.mattprovost.dev
+        dev.mattprovost.jellyfin.domain: "{{ lookup('service_domain', 'jellyfin') }}"
         dev.mattprovost.jellyfin.port: 8096
 
 networks:

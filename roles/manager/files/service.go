@@ -28,7 +28,7 @@ type Service struct {
 
 func NewService(serviceName string, domainInfo DomainInfo) Service {
 	return Service{
-		Name:          domainInfo.Name,
+		Name:          fmt.Sprintf("%s (%s)", domainInfo.Name, instance_name),
 		DockerService: serviceName,
 		Config: ServiceConfig{
 			Domain:       domainInfo.Domain,

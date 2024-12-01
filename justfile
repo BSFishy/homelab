@@ -8,7 +8,7 @@ alias c := config
 
 # configure the project
 config:
-  go run config/main.go
+  @go run config/main.go
 
 # deploy the dev environment
 dev:
@@ -21,3 +21,7 @@ clean-stacks:
 # delete all volumes
 clean-volumes:
   docker volume ls --format json | jq -r .Name | xargs docker volume rm
+
+# print out the default admin password for ldap
+ldap-password:
+  @cat roles/openldap/files/credentials/password.txt

@@ -67,8 +67,9 @@
     api_email: "{{ lookup('ansible.builtin.env', 'CLOUDFLARE_API_EMAIL') }}"
     api_key: "{{ lookup('ansible.builtin.env', 'CLOUDFLARE_API_KEY') }}"
     account_id: "{{ lookup('ansible.builtin.env', 'CLOUDFLARE_ACCOUNT_ID') }}"
+    base_domain: "{{ base_domain }}"
     client_secret: "{{ authelia_client_secret }}"
-    name: Authelia
+    name: "Authelia ({{ lookup('ansible.builtin.env', 'INSTANCE_NAME') }})"
   register: cloudflare_idp
 
 - name: Set Authelia IDP fact

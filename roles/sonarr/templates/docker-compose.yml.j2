@@ -19,7 +19,7 @@ services:
       - 8989
     deploy:
       labels:
-        dev.mattprovost.sonarr.domain: sonarr.home.mattprovost.dev
+        dev.mattprovost.sonarr.domain: "{{ lookup('service_domain', 'sonarr') }}"
         dev.mattprovost.sonarr.port: 8989
         dev.mattprovost.sonarr.access: "true"
         dev.mattprovost.sonarr.sonarr: "true"
