@@ -51,7 +51,8 @@ def main():
                     auth_url=f"https://auth.{base_domain}/api/oidc/authorization",
                     token_url=f"https://auth.{base_domain}/api/oidc/token",
                     certs_url=f"https://auth.{base_domain}/jwks.json",
-                    claims=["preferred_username", "mail"],
+                    claims=["preferred_username", "mail", "groups"],
+                    scopes=["openid", "email", "profile", "groups"],
                 ),
             )
 

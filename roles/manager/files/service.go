@@ -16,6 +16,7 @@ type ServiceConfig struct {
 	Protocol     string
 	Port         uint32
 	Access       bool
+	AccessAdmin  bool
 	CustomAccess bool
 }
 
@@ -35,6 +36,7 @@ func NewService(serviceName string, domainInfo DomainInfo) Service {
 			Protocol:     domainInfo.Protocol,
 			Port:         domainInfo.Port,
 			Access:       domainInfo.Access,
+			AccessAdmin:  domainInfo.AccessAdmin,
 			CustomAccess: domainInfo.CustomAccess,
 		},
 	}
@@ -230,9 +232,16 @@ func (s *Service) compareRule(policy cloudflare.AccessPolicy) bool {
 			return false
 		}
 	} else {
-		_, ok := rule.(cloudflare.AccessGroupEveryone)
-		if !ok {
-			return false
+		if !s.Config.AccessAdmin {
+			_, ok := rule.(cloudflare.AccessGroupEveryone)
+			if !ok {
+				return false
+			}
+		} else {
+			oidc, ok := rule.(AccessGroupOIDC)
+			if !ok || oidc.OIDC.IdentityProviderId != idp_id || oidc.OIDC.ClaimName != "groups" || oidc.OIDC.ClaimValue != "admins" {
+				return false
+			}
 		}
 	}
 
@@ -242,6 +251,10 @@ func (s *Service) compareRule(policy cloudflare.AccessPolicy) bool {
 func (s *Service) policyName() string {
 	if s.Config.CustomAccess {
 		return "Allow group"
+	}
+
+	if s.Config.AccessAdmin {
+		return "Allow admins"
 	}
 
 	return "Allow everyone"
@@ -258,6 +271,16 @@ func (s *Service) policyRule() interface{} {
 		}
 	}
 
+	if s.Config.AccessAdmin {
+		return AccessGroupOIDC{
+			OIDC: AccessGroupOIDCConfig{
+				IdentityProviderId: idp_id,
+				ClaimName:          "groups",
+				ClaimValue:         "admins",
+			},
+		}
+	}
+
 	return cloudflare.AccessGroupEveryone{
 		Everyone: struct{}{},
 	}
@@ -265,4 +288,14 @@ func (s *Service) policyRule() interface{} {
 
 func (s *Service) ServiceUrl() string {
 	return fmt.Sprintf("%s://%s:%d", s.Config.Protocol, s.DockerService, s.Config.Port)
+}
+
+type AccessGroupOIDC struct {
+	OIDC AccessGroupOIDCConfig `json:"oidc"`
+}
+
+type AccessGroupOIDCConfig struct {
+	IdentityProviderId string `json:"identity_provider_id"`
+	ClaimName          string `json:"claim_name"`
+	ClaimValue         string `json:"claim_value"`
 }

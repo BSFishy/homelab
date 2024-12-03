@@ -4,10 +4,11 @@ authentication_backend:
   ldap:
     address: ldap://openldap_openldap
     base_dn: dc=mattprovost,dc=dev
-    additional_users_dn: ou=users
     user: "CN=admin,DC=mattprovost,DC=dev"
+    additional_users_dn: ou=users
     users_filter: "(&({username_attribute}={input})(objectClass=person))"
-    groups_filter: "(&(member={dn})(objectClass=groupOfNames))"
+    additional_groups_dn: ou=groups
+    groups_filter: "(memberUid={username})"
     attributes:
       mail: mail
       group_name: cn
@@ -60,6 +61,7 @@ identity_providers:
           - "openid"
           - "profile"
           - "email"
+          - "groups"
         userinfo_signed_response_alg: "none"
 
 notifier:
