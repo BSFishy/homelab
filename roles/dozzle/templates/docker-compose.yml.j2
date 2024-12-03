@@ -13,6 +13,7 @@ services:
         dev.mattprovost.dozzle.domain: "{{ lookup('service_domain', 'dozzle') }}"
         dev.mattprovost.dozzle.port: 8080
         dev.mattprovost.dozzle.access: "true"
+        dev.mattprovost.dozzle.access.admin: "true"
     networks:
       - cloudflared-network
     healthcheck:

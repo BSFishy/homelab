@@ -31,6 +31,7 @@ services:
         dev.mattprovost.portainer.domain: "{{ lookup('service_domain', 'portainer') }}"
         dev.mattprovost.portainer.port: 9000
         dev.mattprovost.portainer.access: "true"
+        dev.mattprovost.portainer.access.admin: "true"
 
 networks:
   agent_network:

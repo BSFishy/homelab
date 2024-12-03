@@ -12,6 +12,7 @@ type DomainInfo struct {
 	Protocol     string
 	Port         uint32
 	Access       bool
+	AccessAdmin  bool
 	CustomAccess bool
 
 	Transmission bool
@@ -65,6 +66,7 @@ func extractDomainInfo(labels map[string]string) []DomainInfo {
 			Port:         uint32(port),
 			Protocol:     protocol,
 			Access:       serviceInfo["access"] == "true",
+			AccessAdmin:  serviceInfo["access.admin"] == "true",
 			CustomAccess: serviceInfo["access.custom"] == "true",
 
 			Transmission: serviceInfo["transmission"] == "true",
