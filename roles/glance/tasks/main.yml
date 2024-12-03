@@ -1,0 +1,18 @@
+- name: Create glance config in Docker
+  community.docker.docker_config:
+    name: glance_config
+    data: "{{ lookup('template', role_path + '/templates/glance.yml.j2') | b64encode }}"
+    data_is_b64: true
+    state: present
+    rolling_versions: true
+  register: glance_config
+
+- name: Deploy glance stack
+  community.docker.docker_stack:
+    state: present
+    name: glance
+    compose:
+      - "{{ glance_compose }}"
+    prune: true
+  vars:
+    glance_compose: "{{ lookup('template', role_path + '/templates/docker-compose.yml.j2') | from_yaml }}"

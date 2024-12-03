@@ -46,6 +46,9 @@
     - portainer
     - dozzle
 
+    # general service
+    - glance
+
     # media server
     - media-server
     - transmission
