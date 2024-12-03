@@ -37,3 +37,4 @@ adding this so i dont forget things
   - should also be able to use api tokens
 - configure \*arrs and jellyfin through apis in manager service
 - make networks rolling release like the config in authelia :)
+- make the manager use a system of locking along with the debouncer
