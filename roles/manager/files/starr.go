@@ -8,6 +8,7 @@ import (
 	"github.com/BSFishy/starr"
 	"github.com/BSFishy/starr/prowlarr"
 	"github.com/BSFishy/starr/radarr"
+	"github.com/BSFishy/starr/readarr"
 	"github.com/BSFishy/starr/sonarr"
 )
 
@@ -32,9 +33,15 @@ type radarrrr struct {
 	arr
 }
 
+type readarrrr struct {
+	Readarr *readarr.Readarr
+	arr
+}
+
 type starrs struct {
 	sonarrs       []sonarrrr
 	radarrs       []radarrrr
+	readarrs      []readarrrr
 	prowlarrs     []prowlarrrr
 	transmissions []arr
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/BSFishy/starr"
 	"github.com/BSFishy/starr/prowlarr"
 	"github.com/BSFishy/starr/radarr"
+	"github.com/BSFishy/starr/readarr"
 	"github.com/BSFishy/starr/sonarr"
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/docker/docker/api/types/events"
@@ -106,12 +107,16 @@ func (m *manager) starrServiceIteration() {
 			fmt.Printf("failed to sync radarr: %s\n", err)
 		}
 	}
+
+	for _, r := range m.ss.readarrs {
+		if err := m.syncReadarr(&r); err != nil {
+			fmt.Printf("failed to sync readarr: %s\n", err)
+		}
+	}
 }
 
 func (m *manager) syncProwlarr(pr *prowlarrrr) error {
 	p := pr.Prowlarr
-
-	fmt.Printf("Syncing prowlarr\n")
 	dlClients, err := p.GetDownloadClients()
 	if err != nil {
 		return errors.Wrapf(err, "failed to get download clients")
@@ -227,12 +232,10 @@ func (m *manager) syncProwlarr(pr *prowlarrrr) error {
 		}
 
 		fields := map[string]interface{}{
-			"prowlarrUrl":                   fmt.Sprintf("http://%s:%d", pr.Host, pr.Port),
-			"baseUrl":                       fmt.Sprintf("http://%s:%d", r.Host, r.Port),
-			"apiKey":                        os.Getenv(fmt.Sprintf("STARR_API_KEY_%s", r.Name)),
-			"syncCategories":                []int{5000, 5010, 5020, 5030, 5040, 5045, 5050, 5090},
-			"animeSyncCategories":           []int{5070},
-			"syncAnimeStandardFormatSearch": true,
+			"prowlarrUrl":    fmt.Sprintf("http://%s:%d", pr.Host, pr.Port),
+			"baseUrl":        fmt.Sprintf("http://%s:%d", r.Host, r.Port),
+			"apiKey":         os.Getenv(fmt.Sprintf("STARR_API_KEY_%s", r.Name)),
+			"syncCategories": []int{2000, 2010, 2020, 2030, 2040, 2045, 2050, 2060, 2070, 2080, 2090},
 			"syncRejectBlocklistedTorrentHashesWhileGrabbing": false,
 		}
 
@@ -266,14 +269,58 @@ func (m *manager) syncProwlarr(pr *prowlarrrr) error {
 		}
 	}
 
+	for _, r := range m.ss.readarrs {
+		var read *prowlarr.ApplicationOutput
+		for _, app := range apps {
+			if app.Name == r.Name {
+				read = app
+			}
+		}
+
+		fields := map[string]interface{}{
+			"prowlarrUrl":    fmt.Sprintf("http://%s:%d", pr.Host, pr.Port),
+			"baseUrl":        fmt.Sprintf("http://%s:%d", r.Host, r.Port),
+			"apiKey":         os.Getenv(fmt.Sprintf("STARR_API_KEY_%s", r.Name)),
+			"syncCategories": []int{7000, 7010, 7020, 7030, 7040, 7050, 7060},
+			"syncRejectBlocklistedTorrentHashesWhileGrabbing": false,
+		}
+
+		application := &prowlarr.ApplicationInput{
+			Name:               r.Name,
+			Implementation:     "Readarr",
+			ImplementationName: "Readarr",
+			ConfigContract:     "ReadarrSettings",
+			Tags:               []int{},
+			SyncLevel:          "fullSync",
+			Fields:             toFields(fields),
+		}
+
+		if read == nil {
+			// create new app
+			_, err := p.AddApplication(application)
+			if err != nil {
+				fmt.Printf("failed to add application to prowlarr: %s\n", err)
+				continue
+			}
+		} else {
+			// update app
+			if read.Implementation != application.Implementation || read.ImplementationName != application.ImplementationName || read.ConfigContract != application.ConfigContract || read.SyncLevel != application.SyncLevel || !fieldsMatch(read.Fields, fields) {
+				application.ID = read.ID
+				_, err := p.UpdateApplication(application, false)
+				if err != nil {
+					fmt.Printf("failed to update application in prowlarr: %s\n", err)
+					continue
+				}
+			}
+		}
+	}
+
 	fmt.Printf("successfully synced prowlarr\n")
 
 	return nil
 }
 
 func (m *manager) syncSonarr(so *sonarrrr) error {
-	fmt.Printf("Syncing sonarr\n")
-
 	s := so.Sonarr
 	dlClients, err := s.GetDownloadClients()
 	if err != nil {
@@ -290,9 +337,10 @@ func (m *manager) syncSonarr(so *sonarrrr) error {
 		}
 
 		fields := map[string]interface{}{
-			"host":   t.Host,
-			"port":   t.Port,
-			"useSsl": false,
+			"host":       t.Host,
+			"port":       t.Port,
+			"useSsl":     false,
+			"tvCategory": "tv",
 		}
 
 		downloadClient := &sonarr.DownloadClientInput{
@@ -330,8 +378,6 @@ func (m *manager) syncSonarr(so *sonarrrr) error {
 }
 
 func (m *manager) syncRadarr(ra *radarrrr) error {
-	fmt.Printf("Syncing radarr\n")
-
 	r := ra.Radarr
 	dlClients, err := r.GetDownloadClients()
 	if err != nil {
@@ -348,9 +394,10 @@ func (m *manager) syncRadarr(ra *radarrrr) error {
 		}
 
 		fields := map[string]interface{}{
-			"host":   t.Host,
-			"port":   t.Port,
-			"useSsl": false,
+			"host":          t.Host,
+			"port":          t.Port,
+			"useSsl":        false,
+			"movieCategory": "movies",
 		}
 
 		downloadClient := &radarr.DownloadClientInput{
@@ -387,6 +434,63 @@ func (m *manager) syncRadarr(ra *radarrrr) error {
 	return nil
 }
 
+func (m *manager) syncReadarr(ra *readarrrr) error {
+	r := ra.Readarr
+	dlClients, err := r.GetDownloadClients()
+	if err != nil {
+		return errors.Wrapf(err, "failed to get download clients for readarr")
+	}
+
+	for _, t := range m.ss.transmissions {
+		var client *readarr.DownloadClientOutput
+		for _, c := range dlClients {
+			if c.Name == t.Name {
+				client = c
+				break
+			}
+		}
+
+		fields := map[string]interface{}{
+			"host":          t.Host,
+			"port":          t.Port,
+			"useSsl":        false,
+			"musicCategory": "books",
+		}
+
+		downloadClient := &readarr.DownloadClientInput{
+			Enable:         true,
+			Name:           t.Name,
+			Priority:       1,
+			Implementation: "Transmission",
+			Protocol:       "torrent",
+			ConfigContract: "TransmissionSettings",
+			Tags:           []int{},
+			Fields:         toFields(fields),
+		}
+
+		if client == nil {
+			// add new download client
+			_, err := r.AddDownloadClient(downloadClient)
+			if err != nil {
+				fmt.Printf("failed to add download client to readarr: %s\n", err)
+				continue
+			}
+		} else {
+			// check if client needs to be updated
+			if !client.Enable || client.Implementation != downloadClient.Implementation || client.Protocol != downloadClient.Protocol || client.ConfigContract != downloadClient.ConfigContract || !fieldsMatch(client.Fields, fields) {
+				downloadClient.ID = client.ID
+				_, err := r.UpdateDownloadClient(downloadClient, false)
+				if err != nil {
+					fmt.Printf("failed to update download client %s in readarr: %s\n", t.Name, err)
+				}
+			}
+		}
+	}
+
+	fmt.Printf("successfully synced readarr\n")
+	return nil
+}
+
 func toFields(fields map[string]interface{}) []*starr.FieldInput {
 	var out []*starr.FieldInput
 	for key, value := range fields {
@@ -400,14 +504,18 @@ func toFields(fields map[string]interface{}) []*starr.FieldInput {
 }
 
 func fieldsMatch(a []*starr.FieldOutput, b map[string]interface{}) bool {
+	aMap := map[string]interface{}{}
 	for _, field := range a {
-		key := field.Name
-		bField, ok := b[key]
+		aMap[field.Name] = field.Value
+	}
+
+	for key, value := range b {
+		aValue, ok := aMap[key]
 		if !ok {
-			continue
+			return false
 		}
 
-		if bField != field.Value {
+		if value != aValue {
 			return false
 		}
 	}

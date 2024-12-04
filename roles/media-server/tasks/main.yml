@@ -17,5 +17,5 @@
     volumes:
       - media-server:/data
       - "{{ role_path }}/files/script.sh:/run/script.sh"
-    state: present
+    state: started
     restart_policy: "no"

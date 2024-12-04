@@ -55,6 +55,7 @@
     - prowlarr
     - sonarr
     - radarr
+    - readarr
     - recyclarr
     - jellyfin
     - jellyseerr

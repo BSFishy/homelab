@@ -10,6 +10,7 @@ import (
 
 	"github.com/BSFishy/starr/prowlarr"
 	"github.com/BSFishy/starr/radarr"
+	"github.com/BSFishy/starr/readarr"
 	"github.com/BSFishy/starr/sonarr"
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/docker/docker/api/types"
@@ -86,6 +87,13 @@ func syncServices(m *manager) error {
 				ss.radarrs = append(ss.radarrs, radarrrr{
 					Radarr: radarr.New(NewStarr(serviceName, domain)),
 					arr:    r,
+				})
+			}
+
+			if domain.Readarr {
+				ss.readarrs = append(ss.readarrs, readarrrr{
+					Readarr: readarr.New(NewStarr(serviceName, domain)),
+					arr:     r,
 				})
 			}
 

@@ -1,0 +1,32 @@
+- name: Create readarr api key
+  ansible.builtin.set_fact:
+    readarr_api_key: "{{ lookup('ansible.builtin.password', role_path + '/files/credentials/api_key.txt', length=32, chars=['ascii_letters']) }}"
+
+- name: Build custom Readarr image
+  community.docker.docker_image_build:
+    path: "{{ role_path }}/files"
+    name: "{{ image }}"
+    pull: true
+    rebuild: "always"
+    outputs:
+      - push: true
+        type: image
+
+- name: Create configuration
+  community.docker.docker_config:
+    name: readarr-config
+    data: "{{ lookup('template', role_path + '/templates/config.xml.j2') | b64encode }}"
+    data_is_b64: true
+    state: present
+    rolling_versions: true
+  register: readarr_config
+
+- name: Deploy readarr stack
+  community.docker.docker_stack:
+    state: present
+    name: readarr
+    compose:
+      - "{{ readarr_compose }}"
+    prune: true
+  vars:
+    readarr_compose: "{{ lookup('template', role_path + '/templates/docker-compose.yml.j2') | from_yaml }}"

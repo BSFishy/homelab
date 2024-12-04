@@ -1,0 +1,43 @@
+services:
+  readarr:
+    image: "{{ image }}"
+    environment:
+      # - "PUID={{ ansible_user_uid }}"
+      # - "PGID={{ ansible_user_gid }}"
+      - "TZ=America/Chicago"
+    volumes:
+      - "config:/config"
+      - "media-server:/data"
+    networks:
+      - cloudflared-network
+      - prowlarr-network
+      - transmission-network
+    configs:
+      - source: "{{ readarr_config.config_name }}"
+        target: /tmp/config.xml
+    ports:
+      - 8787
+    deploy:
+      labels:
+        dev.mattprovost.readarr.domain: "{{ lookup('service_domain', 'readarr') }}"
+        dev.mattprovost.readarr.port: 8787
+        dev.mattprovost.readarr.access: "true"
+        dev.mattprovost.readarr.access.admin: "true"
+        dev.mattprovost.readarr.readarr: "true"
+
+networks:
+  cloudflared-network:
+    external: true
+  prowlarr-network:
+    external: true
+  transmission-network:
+    external: true
+
+volumes:
+  config:
+  media-server:
+    external: true
+
+configs:
+  {{ readarr_config.config_name }}:
+    external: true
