@@ -1,0 +1,5 @@
+# password persistence
+/credentials
+
+# keep all gitkeep files
+!**/.gitkeep

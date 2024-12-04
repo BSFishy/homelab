@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"sync"
 	"time"
 )
 
@@ -12,6 +13,7 @@ type Debouncer struct {
 	eventCh  chan interface{}
 	m        *manager
 	interval time.Duration
+	mu       sync.Mutex
 }
 
 // NewDebouncer initializes and returns a Debouncer
@@ -37,10 +39,15 @@ func (d *Debouncer) start() {
 
 // execute is the function to be debounced
 func (d *Debouncer) execute() {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+
 	fmt.Println("Function executed at", time.Now())
 	if err := syncServices(d.m); err != nil {
 		log.Printf("error syncing services: %s", err)
 	}
+
+	fmt.Println("Function finished executing at", time.Now())
 }
 
 // Trigger signals an event to the debouncer
