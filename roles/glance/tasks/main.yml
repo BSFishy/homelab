@@ -7,6 +7,16 @@
     rolling_versions: true
   register: glance_config
 
+- name: Build custom glance image
+  community.docker.docker_image_build:
+    path: "{{ role_path }}/files"
+    name: "{{ image }}"
+    pull: true
+    rebuild: "always"
+    outputs:
+      - push: true
+        type: image
+
 - name: Deploy glance stack
   community.docker.docker_stack:
     state: present

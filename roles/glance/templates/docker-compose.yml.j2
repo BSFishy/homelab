@@ -1,6 +1,6 @@
 services:
   glance:
-    image: glanceapp/glance
+    image: "{{ image }}:latest"
     volumes:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
@@ -12,10 +12,27 @@ services:
       - source: "{{ glance_config.config_name }}"
         target: /app/glance.yml
     deploy:
+      mode: replicated
+      replicas: 1
       labels:
         dev.mattprovost.glance.domain: "{{ base_domain }}"
         dev.mattprovost.glance.port: 8080
         dev.mattprovost.glance.access: "true"
+      update_config:
+        parallelism: 1
+        order: start-first
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 60s
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: "128M"
+        reservations:
+          cpus: "0.10"
+          memory: "64M"
 
 networks:
   cloudflared-network:
