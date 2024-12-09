@@ -9,9 +9,26 @@ services:
     ports:
       - 9091
     deploy:
+      mode: replicated
+      replicas: 1
       labels:
         dev.mattprovost.authelia.domain: "{{ lookup('service_domain', 'auth') }}"
         dev.mattprovost.authelia.port: 9091
+      update_config:
+        parallelism: 1
+        order: start-first
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 60s
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: "128M"
+        reservations:
+          cpus: "0.25"
+          memory: "64M"
     configs:
       - source: "{{ authelia_config.config_name }}"
         target: /config/configuration.yml
