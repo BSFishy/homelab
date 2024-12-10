@@ -20,6 +20,3 @@ services:
       mode: global
       restart_policy:
         condition: any
-      placement:
-        constraints:
-          - node.labels.dmm == true
