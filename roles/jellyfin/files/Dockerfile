@@ -2,7 +2,7 @@ FROM lscr.io/linuxserver/jellyfin:latest
 
 # Install unzip utility
 RUN apt-get update && \
-  apt-get install -y unzip && \
+  apt-get install -y unzip curl && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/*
 
