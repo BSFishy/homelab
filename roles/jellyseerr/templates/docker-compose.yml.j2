@@ -14,9 +14,32 @@ services:
       - cloudflared-network
       - prowlarr-network
     deploy:
+      mode: replicated
+      replicas: 1
       labels:
         dev.mattprovost.jellyseerr.domain: "{{ lookup('service_domain', 'jellyseerr') }}"
         dev.mattprovost.jellyseerr.port: 5055
+      update_config:
+        parallelism: 1
+        order: start-first
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 60s
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: "1G"
+        reservations:
+          cpus: "0.25"
+          memory: "512M"
+    healthcheck:
+      test: ["CMD", "sh", "-c", "wget -q --spider http://127.0.0.1:5055 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
 volumes:
   config:
