@@ -17,13 +17,36 @@ services:
         target: /tmp/config.xml
     ports:
       - 8787
+    healthcheck:
+      test: ["CMD", "sh", "-c", "wget -q --spider http://127.0.0.1:8787 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     deploy:
+      mode: replicated
+      replicas: 1
       labels:
         dev.mattprovost.readarr.domain: "{{ lookup('service_domain', 'readarr') }}"
         dev.mattprovost.readarr.port: 8787
         dev.mattprovost.readarr.access: "true"
         dev.mattprovost.readarr.access.admin: "true"
         dev.mattprovost.readarr.readarr: "true"
+      update_config:
+        parallelism: 1
+        order: start-first
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 60s
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "512M"
+        reservations:
+          cpus: "0.25"
+          memory: "256M"
 
 networks:
   cloudflared-network:

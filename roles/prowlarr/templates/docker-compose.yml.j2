@@ -17,13 +17,36 @@ services:
         target: /config/config.xml
     ports:
       - 9696
+    healthcheck:
+      test: ["CMD", "sh", "-c", "wget -q --spider http://127.0.0.1:9696 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     deploy:
+      mode: replicated
+      replicas: 1
       labels:
         dev.mattprovost.prowlarr.domain: "{{ lookup('service_domain', 'prowlarr') }}"
         dev.mattprovost.prowlarr.port: 9696
         dev.mattprovost.prowlarr.access: "true"
         dev.mattprovost.prowlarr.access.admin: "true"
         dev.mattprovost.prowlarr.prowlarr: "true"
+      update_config:
+        parallelism: 1
+        order: start-first
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 60s
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "512M"
+        reservations:
+          cpus: "0.25"
+          memory: "256M"
 
 networks:
   cloudflared-network:

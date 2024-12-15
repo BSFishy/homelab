@@ -10,6 +10,24 @@ services:
     configs:
       - source: "{{ recyclarr_config.config_name }}"
         target: /config/recyclarr.yml
+    deploy:
+      mode: replicated
+      replicas: 1
+      update_config:
+        parallelism: 1
+        order: start-first
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 60s
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: "64M"
+        reservations:
+          cpus: "0.10"
+          memory: "32M"
 
 volumes:
   config:

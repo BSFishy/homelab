@@ -17,6 +17,32 @@ services:
           size: 134217728 # 128*2^20 bytes = 128Mb
     ports:
       - "5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "admin", "-d", "postgres"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      mode: replicated
+      replicas: 1
+      update_config:
+        parallelism: 1
+        order: stop-first
+        delay: 10s
+        failure_action: rollback
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 60s
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: "512M"
+        reservations:
+          cpus: "0.25"
+          memory: "256M"
 
 networks:
   postgres:
