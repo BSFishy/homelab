@@ -19,7 +19,24 @@ services:
     ports:
       - "389"
       - "636"
-    restart: unless-stopped
+    deploy:
+      mode: replicated
+      replicas: 1
+      update_config:
+        parallelism: 1
+        order: start-first
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 60s
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: "64M"
+        reservations:
+          cpus: "0.25"
+          memory: "32M"
 
   lum:
     image: wheelybird/ldap-user-manager:latest
@@ -38,13 +55,36 @@ services:
       - openldap-password
     ports:
       - 80
+    healthcheck:
+      # Check if the main web page returns a 200 OK
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:80"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     deploy:
+      mode: replicated
+      replicas: 1
       labels:
         dev.mattprovost.lum.domain: "{{ lookup('service_domain', 'ldap') }}"
         dev.mattprovost.lum.port: 80
         dev.mattprovost.lum.access: "true"
         dev.mattprovost.lum.access.custom: "true"
-    restart: unless-stopped
+      update_config:
+        parallelism: 1
+        order: start-first
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 60s
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: "64M"
+        reservations:
+          cpus: "0.25"
+          memory: "32M"
 
   pla:
     image: osixia/phpldapadmin:latest
@@ -60,11 +100,28 @@ services:
     ports:
       - 80
     deploy:
+      mode: replicated
+      replicas: 1
       labels:
         dev.mattprovost.pla.domain: "{{ lookup('service_domain', 'pla') }}"
         dev.mattprovost.pla.port: 80
         dev.mattprovost.pla.access: "true"
         dev.mattprovost.pla.access.custom: "true"
+      update_config:
+        parallelism: 1
+        order: start-first
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 60s
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: "128M"
+        reservations:
+          cpus: "0.25"
+          memory: "64M"
 
 networks:
   openldap:
