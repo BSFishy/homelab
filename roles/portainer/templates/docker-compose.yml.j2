@@ -10,6 +10,21 @@ services:
       mode: global
       placement:
         constraints: [node.platform.os == linux]
+      update_config:
+        parallelism: 1
+        order: start-first
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 60s
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: "64M"
+        reservations:
+          cpus: "0.10"
+          memory: "32M"
 
   portainer:
     image: portainer/portainer-ce:2.21.4
@@ -32,6 +47,21 @@ services:
         dev.mattprovost.portainer.port: 9000
         dev.mattprovost.portainer.access: "true"
         dev.mattprovost.portainer.access.admin: "true"
+      update_config:
+        parallelism: 1
+        order: start-first
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 60s
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: "64M"
+        reservations:
+          cpus: "0.10"
+          memory: "32M"
 
 networks:
   agent_network:
