@@ -14,6 +14,9 @@ services:
       labels:
         dev.mattprovost.authelia.domain: "{{ lookup('service_domain', 'auth') }}"
         dev.mattprovost.authelia.port: 9091
+        prometheus-job: authelia
+        prometheus-port: 9959
+        prometheus-path: /metrics
       update_config:
         parallelism: 1
         order: start-first

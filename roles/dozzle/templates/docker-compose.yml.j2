@@ -9,8 +9,7 @@ services:
     ports:
       - 8080
     deploy:
-      mode: replicated
-      replicas: 1
+      mode: global
       labels:
         dev.mattprovost.dozzle.domain: "{{ lookup('service_domain', 'dozzle') }}"
         dev.mattprovost.dozzle.port: 8080

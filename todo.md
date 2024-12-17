@@ -38,3 +38,5 @@ adding this so i dont forget things
 - configure \*arrs and jellyfin through apis in manager service
 - make networks rolling release like the config in authelia :)
 - make the manager use a system of locking along with the debouncer
+- remove the unnecessary ports because cloudflared can find them fine without
+  exposing them

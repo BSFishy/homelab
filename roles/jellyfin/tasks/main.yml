@@ -15,6 +15,15 @@
     data_is_b64: true
     state: present
     rolling_versions: true
+  register: jellyfin_ldap_config
+
+- name: Create jellyfin config in Docker
+  community.docker.docker_config:
+    name: jellyfin_config
+    data: "{{ lookup('template', role_path + '/templates/system.xml.j2') | b64encode }}"
+    data_is_b64: true
+    state: present
+    rolling_versions: true
   register: jellyfin_config
 
 - name: Deploy jellyfin stack

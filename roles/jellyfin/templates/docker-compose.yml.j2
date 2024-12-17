@@ -12,8 +12,10 @@ services:
       - cloudflared-network
       - openldap
     configs:
-      - source: "{{ jellyfin_config.config_name }}"
+      - source: "{{ jellyfin_ldap_config.config_name }}"
         target: /tmp/LDAP-Auth.xml
+      - source: "{{ jellyfin_config.config_name }}"
+        target: /tmp/system.xml
     ports:
       - 8096
       - 1900:1900/udp
@@ -24,9 +26,12 @@ services:
       labels:
         dev.mattprovost.jellyfin.domain: "{{ lookup('service_domain', 'jellyfin') }}"
         dev.mattprovost.jellyfin.port: 8096
+        prometheus-job: jellyfin
+        prometheus-port: 8096
+        prometheus-path: /metrics
       update_config:
         parallelism: 1
-        order: start-first
+        order: stop-first
       restart_policy:
         condition: on-failure
         delay: 5s
@@ -60,5 +65,7 @@ volumes:
     external: true
 
 configs:
+  {{ jellyfin_ldap_config.config_name }}:
+    external: true
   {{ jellyfin_config.config_name }}:
     external: true
