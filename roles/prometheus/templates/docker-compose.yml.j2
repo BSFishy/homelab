@@ -1,0 +1,92 @@
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    user: root
+    volumes:
+      - "data:/prometheus"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - cloudflared-network
+      - prometheus
+    configs:
+      - source: "{{ prometheus_config.config_name }}"
+        target: /etc/prometheus/prometheus.yml
+    healthcheck:
+      test: ["CMD", "sh", "-c", "wget -q --spider http://127.0.0.1:9090/-/ready || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        dev.mattprovost.prometheus.domain: "{{ lookup('service_domain', 'prometheus') }}"
+        dev.mattprovost.prometheus.port: 9090
+        dev.mattprovost.prometheus.access: "true"
+        dev.mattprovost.prometheus.access.admin: "true"
+      update_config:
+        parallelism: 1
+        order: stop-first
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 60s
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: "1G"
+        reservations:
+          cpus: "0.50"
+          memory: "512M"
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    command: -docker_only
+    networks:
+      - cloudflared-network
+      - prometheus
+    volumes:
+      - "/:/rootfs:ro"
+      - "/var/run:/var/run:ro"
+      - "/sys:/sys:ro"
+      - "/var/lib/docker/:/var/lib/docker:ro"
+    deploy:
+      mode: global
+      labels:
+        dev.mattprovost.cadvisor.domain: "{{ lookup('service_domain', 'cadvisor') }}"
+        dev.mattprovost.cadvisor.port: 8080
+        dev.mattprovost.cadvisor.access: "true"
+        dev.mattprovost.cadvisor.access.admin: "true"
+        prometheus-job: cadvisor
+        prometheus-port: 8080
+        prometheus-path: /metrics
+      update_config:
+        parallelism: 1
+        order: start-first
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 60s
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: "512M"
+        reservations:
+          cpus: "0.10"
+          memory: "256M"
+
+volumes:
+  data:
+
+configs:
+  {{ prometheus_config.config_name }}:
+    external: true
+
+networks:
+  cloudflared-network:
+    external: true
+  prometheus:
+    external: true

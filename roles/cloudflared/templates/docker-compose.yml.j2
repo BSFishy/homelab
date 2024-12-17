@@ -6,8 +6,13 @@ services:
       - TUNNEL_TOKEN={{ cloudflare_tunnel.tunnel_token }}
     networks:
       - cloudflared-network
+      - prometheus
     deploy:
       mode: global
+      labels:
+        prometheus-job: cloudflared
+        prometheus-port: 8080
+        prometheus-path: /metrics
       update_config:
         parallelism: 1
         order: start-first
@@ -32,4 +37,6 @@ services:
 
 networks:
   cloudflared-network:
+    external: true
+  prometheus:
     external: true

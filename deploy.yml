@@ -34,6 +34,7 @@
     - device-mapping-manager
     - postgres
     - redis
+    - prometheus
 
     # remote access
     - cloudflared

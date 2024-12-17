@@ -1,0 +1,32 @@
+- name: Create configuration
+  community.docker.docker_config:
+    name: prometheus-config
+    data: "{{ lookup('template', role_path + '/templates/prometheus.yml.j2') | b64encode }}"
+    data_is_b64: true
+    state: present
+    rolling_versions: true
+  register: prometheus_config
+
+- name: Get info on prometheus network
+  community.docker.docker_network_info:
+    name: prometheus
+  register: prometheus_network
+
+- name: Create prometheus network
+  community.docker.docker_network:
+    name: prometheus
+    driver: overlay
+    scope: swarm
+    attachable: true
+    appends: true
+  when: not prometheus_network.exists
+
+- name: Deploy prometheus stack
+  community.docker.docker_stack:
+    state: present
+    name: prometheus
+    compose:
+      - "{{ prometheus_compose }}"
+    prune: true
+  vars:
+    prometheus_compose: "{{ lookup('template', role_path + '/templates/docker-compose.yml.j2') | from_yaml }}"
