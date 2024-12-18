@@ -1,0 +1,18 @@
+- name: Create ldap configuration
+  community.docker.docker_config:
+    name: grafana-ldap-config
+    data: "{{ lookup('template', role_path + '/files/ldap.toml') | b64encode }}"
+    data_is_b64: true
+    state: present
+    rolling_versions: true
+  register: grafana_ldap_config
+
+- name: Deploy grafana stack
+  community.docker.docker_stack:
+    state: present
+    name: grafana
+    compose:
+      - "{{ grafana_compose }}"
+    prune: true
+  vars:
+    grafana_compose: "{{ lookup('template', role_path + '/templates/docker-compose.yml.j2') | from_yaml }}"

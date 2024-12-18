@@ -46,6 +46,7 @@
     # general management
     - portainer
     - dozzle
+    - grafana
 
     # general service
     - glance
