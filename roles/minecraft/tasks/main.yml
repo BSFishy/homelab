@@ -1,9 +1,0 @@
-- name: Deploy minecraft stack
-  community.docker.docker_stack:
-    state: present
-    name: minecraft
-    compose:
-      - "{{ ldap_compose }}"
-    prune: true
-  vars:
-    ldap_compose: "{{ lookup('template', role_path + '/templates/docker-compose.yml.j2') | from_yaml }}"
