@@ -51,11 +51,15 @@ identity_providers:
         algorithm: "RS256"
         use: "sig"
         key: "{{ lookup('ansible.builtin.file', role_path + '/files/credentials/private_key.pem').replace('\n', '\\n') }}"
+    claims_policies:
+      default:
+        id_token: ['groups', 'email', 'email_verified', 'alt_emails', 'preferred_username', 'name']
     clients:
       - client_id: "cloudflare"
         client_name: "Cloudflare ZeroTrust"
         client_secret: "{{ authelia_client_secret | password_hash }}"
         public: false
+        claims_policy: 'default'
         authorization_policy: "one_factor"
         consent_mode: "implicit"
         redirect_uris:

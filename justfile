@@ -14,6 +14,10 @@ config:
 dev:
   ansible-playbook deploy.yml -i inventory/localhost.yml
 
+# delete everything that ins't being actively used
+clean:
+  docker system prune -a
+
 # delete all stacks
 clean-stacks:
   docker stack ls --format json | jq -r .Name | xargs docker stack rm

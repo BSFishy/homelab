@@ -32,12 +32,14 @@
     # basic infrastructure
     - registry
     - device-mapping-manager
-    - postgres
-    - redis
-    - prometheus
 
     # remote access
     - cloudflared
+
+    # utilities
+    - postgres
+    - redis
+    - prometheus
 
     # authentication
     - openldap
