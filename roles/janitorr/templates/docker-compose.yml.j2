@@ -1,0 +1,27 @@
+services:
+  janitorr:
+    image: ghcr.io/schaka/janitorr:stable
+    networks:
+      - cloudflared-network
+    volumes:
+      - "media-server:/data"
+    configs:
+      - source: "{{ janitorr_config.config_name }}"
+        target: /workspace/application.yml
+    healthcheck:
+      test: "wget -T5 -qO- http://localhost:8081/health | grep UP || exit 1"
+      start_period: 30s
+      interval: 5s
+      retries: 3
+
+networks:
+  cloudflared-network:
+    external: true
+
+volumes:
+  media-server:
+    external: true
+
+configs:
+  {{ janitorr_config.config_name }}:
+    external: true

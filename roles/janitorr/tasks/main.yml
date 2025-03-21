@@ -1,0 +1,18 @@
+- name: Create configuration
+  community.docker.docker_config:
+    name: janitorr-config
+    data: "{{ lookup('template', role_path + '/templates/application.yml.j2') | b64encode }}"
+    data_is_b64: true
+    state: present
+    rolling_versions: true
+  register: janitorr_config
+
+- name: Deploy janitorr stack
+  community.docker.docker_stack:
+    state: present
+    name: janitorr
+    compose:
+      - "{{ janitorr_compose }}"
+    prune: true
+  vars:
+    janitorr_compose: "{{ lookup('template', role_path + '/templates/docker-compose.yml.j2') | from_yaml }}"

@@ -63,6 +63,7 @@
     - recyclarr
     - jellyfin
     - jellyseerr
+    - janitorr
     - samba
 
     # manager
