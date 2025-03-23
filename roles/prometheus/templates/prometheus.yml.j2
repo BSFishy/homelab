@@ -4,7 +4,7 @@ global:
   scrape_protocols:
   - OpenMetricsText1.0.0
   - OpenMetricsText0.0.1
-  - PrometheusText1.0.0
+  - PrometheusProto
   - PrometheusText0.0.4
   evaluation_interval: 15s
 
@@ -30,7 +30,7 @@ scrape_configs:
     scrape_protocols:
     - OpenMetricsText1.0.0
     - OpenMetricsText0.0.1
-    - PrometheusText1.0.0
+    - PrometheusProto
     - PrometheusText0.0.4
     metrics_path: /metrics
     scheme: http
