@@ -46,6 +46,7 @@ func main() {
 
 	form := huh.NewForm(
 		huh.NewGroup(
+			huh.NewNote().Description("Grab keys at https://dash.cloudflare.com/profile/api-tokens"),
 			huh.NewInput().Title("What is your Cloudflare API Email").Value(&api_email),
 			huh.NewInput().
 				Title("What is your Cloudflare API Key").

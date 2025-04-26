@@ -1,0 +1,60 @@
+services:
+  bitmagnet:
+    image: ghcr.io/bitmagnet-io/bitmagnet:latest
+    environment:
+      - POSTGRES_HOST=postgres_postgres
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD={{ postgres_password }}
+    volumes:
+      - config:/root/.config/bitmagnet
+    ports:
+      # API and WebUI port:
+      - "3333:3333"
+      # BitTorrent ports:
+      - "3334:3334/tcp"
+      - "3334:3334/udp"
+    command:
+      - worker
+      - run
+      - --keys=http_server
+      - --keys=queue_server
+      # disable the next line to run without DHT crawler
+      - --keys=dht_crawler
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        dev.mattprovost.bitmagnet.domain: "{{ lookup('service_domain', 'bitmagnet') }}"
+        dev.mattprovost.bitmagnet.port: 3333
+        dev.mattprovost.bitmagnet.access: "true"
+        dev.mattprovost.bitmagnet.access.admin: "true"
+      update_config:
+        parallelism: 1
+        order: start-first
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 60s
+      # resources:
+        # limits:
+          # cpus: "0.25"
+          # memory: "128M"
+        # reservations:
+          # cpus: "0.10"
+          # memory: "64M"
+    networks:
+      - cloudflared-network
+      - postgres
+      - prowlarr-network
+
+volumes:
+  config:
+
+networks:
+  cloudflared-network:
+    external: true
+  postgres:
+    external: true
+  prowlarr-network:
+    external: true

@@ -12,10 +12,14 @@
     appends: true
   when: not postgres_network.exists
 
+- name: Create radarr api key
+  ansible.builtin.set_fact:
+    postgres_password: "{{ lookup('ansible.builtin.password', role_path + '/files/credentials/password.txt', length=32) }}"
+
 - name: Create postgres password secret
   community.docker.docker_secret:
     name: postgres-password
-    data: "{{ lookup('ansible.builtin.password', role_path + '/files/credentials/password.txt', length=32) | b64encode }}"
+    data: "{{ postgres_password | b64encode }}"
     data_is_b64: true
     state: present
 

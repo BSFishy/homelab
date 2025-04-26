@@ -1,0 +1,2 @@
+CREATE DATABASE bigmagnet;
+GRANT ALL PRIVILEGES ON DATABASE bigmagnet TO admin;

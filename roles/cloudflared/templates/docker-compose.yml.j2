@@ -6,7 +6,6 @@ services:
       - TUNNEL_TOKEN={{ cloudflare_tunnel.tunnel_token }}
     networks:
       - cloudflared-network
-      - prometheus
     deploy:
       mode: global
       labels:
@@ -37,6 +36,4 @@ services:
 
 networks:
   cloudflared-network:
-    external: true
-  prometheus:
     external: true
