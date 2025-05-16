@@ -1,0 +1,9 @@
+- name: Deploy decluttarr stack
+  community.docker.docker_stack:
+    state: present
+    name: decluttarr
+    compose:
+      - "{{ decluttarr_compose }}"
+    prune: true
+  vars:
+    decluttarr_compose: "{{ lookup('template', role_path + '/templates/docker-compose.yml.j2') | from_yaml }}"

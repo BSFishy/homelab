@@ -1,0 +1,51 @@
+services:
+  decluttarr:
+    image: ghcr.io/manimatter/decluttarr:latest
+    networks:
+      - cloudflared-network
+    environment:
+      TZ: America/Chicago
+      PUID: 1000
+      PGID: 1000
+
+      ## General
+      # TEST_RUN: "True"
+      # SSL_VERIFICATION: "False"
+      LOG_LEVEL: INFO
+
+      ## Features
+      REMOVE_TIMER: 10
+      REMOVE_FAILED: "True"
+      REMOVE_FAILED_IMPORTS: "True"
+      REMOVE_METADATA_MISSING: "True"
+      REMOVE_MISSING_FILES: "True"
+      REMOVE_ORPHANS: "True"
+      REMOVE_SLOW: "True"
+      REMOVE_STALLED: "True"
+      REMOVE_UNMONITORED: "True"
+      RUN_PERIODIC_RESCANS: '
+        {
+        "SONARR": {"MISSING": true, "CUTOFF_UNMET": true, "MAX_CONCURRENT_SCANS": 3, "MIN_DAYS_BEFORE_RESCAN": 7},
+        "RADARR": {"MISSING": true, "CUTOFF_UNMET": true, "MAX_CONCURRENT_SCANS": 3, "MIN_DAYS_BEFORE_RESCAN": 7}
+        }'
+
+      # Feature Settings
+      PERMITTED_ATTEMPTS: 3
+      MIN_DOWNLOAD_SPEED: 100
+      FAILED_IMPORT_MESSAGE_PATTERNS: '
+        [
+        "Not a Custom Format upgrade for existing",
+        "Not an upgrade for existing"
+        ]'
+
+      ## Radarr
+      RADARR_URL: http://radarr_radarr:7878
+      RADARR_KEY: {{ radarr_api_key }}
+
+      ## Sonarr
+      SONARR_URL: http://sonarr_sonarr:8989
+      SONARR_KEY: {{ sonarr_api_key }}
+
+networks:
+  cloudflared-network:
+    external: true
