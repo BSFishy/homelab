@@ -1,6 +1,6 @@
 file-system:
   access: true
-  validate-seeding: true # validates seeding by checking if the original file exists and skips deletion - turning this off will send a delete to the *arrs even if a torrent may still be active
+  validate-seeding: false # validates seeding by checking if the original file exists and skips deletion - turning this off will send a delete to the *arrs even if a torrent may still be active
   leaving-soon-dir: "/data/media/leaving-soon" # The directory that's known to Janitorr - this will contain new folders with symlinks to your media library for "Leaving Soon"
   media-server-leaving-soon-dir: "/data/media/leaving-soon" # This is the directory Jellyfin/Emby will be told it can find the "Leaving Soon" library, in case its mapped differently
   from-scratch: true # Clean up entire "Leaving Soon" directory and rebuild from scratch - this can help with clearing orphaned data - turning this off can save resources (less writes to drive)
@@ -19,15 +19,15 @@ application:
     movie-expiration:
       # Percentage of free disk space to expiration time - if the highest given number is not reached, nothing will be deleted
       # If filesystem access is not given, disk percentage can't be determined. As a result, Janitorr will always choose the largest expiration time.
-      5: 15d # 15 days
-      10: 30d # 1 month - if a movie's files on your system are older than this, they will be deleted
-      15: 30d # 2 months
-      20: 90d # 3 months
+      5: 0d # 15 days
+      10: 7d # 1 month - if a movie's files on your system are older than this, they will be deleted
+      15: 14d # 2 months
+      20: 28d # 3 months
     season-expiration:
-      5: 15d # 15 days
-      10: 20d # 20 days - if a season's files on your system are older than this, they will be deleted
-      15: 60d # 2 months
-      20: 120d # 4 months
+      5: 0d # 15 days
+      10: 7d # 20 days - if a season's files on your system are older than this, they will be deleted
+      15: 14d # 2 months
+      20: 28d # 4 months
 
   tag-based-deletion:
     enabled: true
